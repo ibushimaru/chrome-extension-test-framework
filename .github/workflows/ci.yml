@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [12.x, 14.x, 16.x, 18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Run framework tests
+      run: npm test
+    
+    - name: Test CLI
+      run: |
+        npm link
+        cext-test --help
+    
+    - name: Test on sample extension
+      run: |
+        mkdir -p test-extension
+        echo '{"manifest_version": 3, "name": "Test", "version": "1.0.0"}' > test-extension/manifest.json
+        node bin/cli.js test-extension -o json
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.os }}-node${{ matrix.node-version }}
+        path: test-results/
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+    
+    - name: Check file permissions
+      run: |
+        test -x bin/cli.js || (echo "cli.js must be executable" && exit 1)
+    
+    - name: Validate package.json
+      run: |
+        node -e "JSON.parse(require('fs').readFileSync('package.json'))"
+    
+    - name: Check for console.log in production code
+      run: |
+        ! grep -r "console\.log" lib/ --include="*.js" || echo "Warning: console.log found in lib/"
+
+  publish-dry-run:
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+        registry-url: 'https://registry.npmjs.org'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Dry run publish
+      run: npm publish --dry-run

@@ -1,0 +1,47 @@
+{
+  "name": "chrome-extension-test-framework",
+  "version": "1.0.0",
+  "description": "Universal testing framework for Chrome extensions - Fast static analysis without browser dependencies",
+  "main": "index.js",
+  "bin": {
+    "cext-test": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "node test/framework.test.js",
+    "prepublishOnly": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibushimaru/chrome-extension-test-framework.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ibushimaru/chrome-extension-test-framework/issues"
+  },
+  "homepage": "https://github.com/ibushimaru/chrome-extension-test-framework#readme",
+  "keywords": [
+    "chrome-extension",
+    "browser-extension",
+    "testing",
+    "test-framework",
+    "static-analysis",
+    "manifest-v3",
+    "chrome",
+    "extension-validator",
+    "quality-assurance",
+    "ci-cd"
+  ],
+  "author": "ibushimaru",
+  "license": "MIT",
+  "dependencies": {},
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "files": [
+    "index.js",
+    "lib/",
+    "suites/",
+    "bin/",
+    "README.md",
+    "LICENSE"
+  ]
+}
