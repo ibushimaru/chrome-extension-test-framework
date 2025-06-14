@@ -1,0 +1,64 @@
+# Development files
+.github/
+.git/
+.gitignore
+.npmignore
+.eslintrc*
+.prettierrc*
+
+# Test files
+test/
+test-*.js
+samples/
+test-data/
+test-output/
+coverage/
+*.test.js
+*.spec.js
+
+# Documentation files (some)
+CONTRIBUTING.md
+MIGRATION_GUIDE.md
+DEPLOYMENT_STEPS.md
+FRAMEWORK_SUMMARY.md
+IMPLEMENTATION_STATUS.md
+SETUP_MANUAL.md
+
+# Config files
+example.config.js
+.cextrc.json
+cext-test.config.js
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build files
+dist/
+build/
+*.map
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
