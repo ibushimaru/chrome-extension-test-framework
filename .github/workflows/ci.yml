@@ -32,7 +32,7 @@ jobs:
     - name: Test CLI
       run: |
         npm link
-        cext-test --help
+        npx cext-test --help
     
     - name: Test on sample extension
       run: |
@@ -46,6 +46,7 @@ jobs:
       with:
         name: test-results-${{ matrix.os }}-node${{ matrix.node-version }}
         path: test-results/
+        if-no-files-found: ignore
 
   lint:
     runs-on: ubuntu-latest
@@ -57,6 +58,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18.x'
+    
+    - name: Fix permissions
+      run: chmod +x bin/cli.js
     
     - name: Check file permissions
       run: |
