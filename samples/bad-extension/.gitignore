@@ -1,0 +1,6 @@
+# This file should not be in production
+node_modules/
+.env
+.DS_Store
+test/
+*.log

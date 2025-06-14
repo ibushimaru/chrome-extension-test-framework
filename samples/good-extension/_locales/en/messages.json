@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Good Extension Example",
+    "description": "The name of the extension"
+  },
+  "extensionDescription": {
+    "message": "A well-structured Chrome extension following best practices",
+    "description": "The description of the extension"
+  },
+  "popupTitle": {
+    "message": "Good Extension",
+    "description": "Title shown in the popup"
+  },
+  "popupDescription": {
+    "message": "This is a well-structured extension following all best practices.",
+    "description": "Description shown in the popup"
+  },
+  "actionButton": {
+    "message": "Perform Action",
+    "description": "Text for the action button"
+  }
+}

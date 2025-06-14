@@ -1,0 +1,11 @@
+TODO List:
+- Fix security issues
+- Remove debug code
+- Minimize permissions
+- Remove jQuery dependency
+- Fix memory leaks
+- Add proper error handling
+- Remove inline scripts
+- Use HTTPS everywhere
+- Add CSP headers
+- Implement proper i18n

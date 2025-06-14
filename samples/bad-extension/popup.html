@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bad Extension</title>
+  <style>
+    body { width: 400px; padding: 10px; }
+    h1 { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Bad Extension</h1>
+  <p>This extension has many issues!</p>
+  <button onclick="doSomething()">Click Me</button>
+  <div id="output"></div>
+  
+  <script>
+    // Inline script - bad practice!
+    function doSomething() {
+      // Using eval - security issue!
+      eval('alert("This is bad!")');
+      
+      // Direct DOM manipulation
+      document.getElementById('output').innerHTML = '<script>console.log("XSS vulnerability!")</script>';
+    }
+    
+    // Global variable pollution
+    var globalData = 'This pollutes global scope';
+  </script>
+  
+  <!-- Loading external script from CDN -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</body>
+</html>

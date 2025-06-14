@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Minimal Extension",
+  "version": "1.0.0",
+  "description": "The bare minimum Chrome extension",
+  
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
