@@ -23,6 +23,28 @@ npm install /path/to/chrome-extension-test-framework
 npm install -g /path/to/chrome-extension-test-framework
 ```
 
+## クイックスタート
+
+### サンプル拡張機能でテスト
+
+このフレームワークには、動作を確認できるサンプル拡張機能が含まれています：
+
+```bash
+# 良い例（すべてのテストに合格）
+cext-test samples/good-extension
+
+# 悪い例（多くの問題を検出）
+cext-test samples/bad-extension
+
+# 最小限の例
+cext-test samples/minimal-extension
+
+# すべてのサンプルをテスト
+node samples/test-all.js
+```
+
+詳細は[samples/README.md](samples/README.md)を参照してください。
+
 ## 使い方
 
 ### CLIとして使用
