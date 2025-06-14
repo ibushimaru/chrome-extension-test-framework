@@ -1,0 +1,36 @@
+/* Bad CSS with issues */
+
+/* Using !important everywhere - bad practice */
+* {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Overly broad selectors */
+div {
+  background: red !important;
+  color: white !important;
+}
+
+/* Using inefficient selectors */
+body > div > div > div > span {
+  font-size: 12px !important;
+}
+
+/* Large embedded data URI - performance issue */
+.logo {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+  /* Imagine this is a huge base64 string */
+}
+
+/* Using deprecated properties */
+.old-style {
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+
+/* Z-index war */
+.my-element {
+  z-index: 999999999 !important;
+}
