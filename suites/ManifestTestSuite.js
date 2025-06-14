@@ -12,7 +12,8 @@ class ManifestTestSuite extends TestSuite {
     constructor(config) {
         super({
             name: 'Manifest Validation',
-            description: 'Chrome拡張機能のmanifest.jsonを検証'
+            description: 'Chrome拡張機能のmanifest.jsonを検証',
+            config: config  // configを親クラスに渡す
         });
 
         this.config = config;
@@ -42,8 +43,7 @@ class ManifestTestSuite extends TestSuite {
 
         // Manifest V3確認
         this.test('Manifest version is 3', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             if (manifest.manifest_version !== 3) {
                 throw new Error(`Expected manifest_version 3, got ${manifest.manifest_version}`);
@@ -52,8 +52,7 @@ class ManifestTestSuite extends TestSuite {
 
         // 必須フィールド確認
         this.test('Required fields present', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             const required = ['manifest_version', 'name', 'version'];
             const missing = required.filter(field => !(field in manifest));
@@ -65,8 +64,7 @@ class ManifestTestSuite extends TestSuite {
 
         // バージョン形式確認
         this.test('Version format valid', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             const versionRegex = /^\d+(\.\d+){0,3}$/;
             if (!versionRegex.test(manifest.version)) {
@@ -76,8 +74,7 @@ class ManifestTestSuite extends TestSuite {
 
         // 名前の長さ制限
         this.test('Name length within limits', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             if (manifest.name && manifest.name.length > 45) {
                 throw new Error(`Name too long: ${manifest.name.length} characters (max 45)`);
@@ -86,8 +83,7 @@ class ManifestTestSuite extends TestSuite {
 
         // 説明の長さ制限
         this.test('Description length within limits', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             if (manifest.description && manifest.description.length > 132) {
                 throw new Error(`Description too long: ${manifest.description.length} characters (max 132)`);
@@ -96,8 +92,7 @@ class ManifestTestSuite extends TestSuite {
 
         // アイコンの検証
         this.test('Icons configuration', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             if (manifest.icons) {
                 const recommendedSizes = ['16', '48', '128'];
@@ -119,8 +114,7 @@ class ManifestTestSuite extends TestSuite {
 
         // Service Worker（Manifest V3）
         this.test('Service worker configuration', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             if (manifest.background) {
                 if (!manifest.background.service_worker) {
@@ -137,8 +131,7 @@ class ManifestTestSuite extends TestSuite {
 
         // Content Scripts検証
         this.test('Content scripts validation', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             if (manifest.content_scripts) {
                 manifest.content_scripts.forEach((script, index) => {
@@ -162,8 +155,7 @@ class ManifestTestSuite extends TestSuite {
 
         // パーミッション検証
         this.test('Permissions validation', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             const allPermissions = [
                 ...(manifest.permissions || []),
@@ -189,8 +181,7 @@ class ManifestTestSuite extends TestSuite {
 
         // Web Accessible Resources検証
         this.test('Web accessible resources', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             if (manifest.web_accessible_resources) {
                 manifest.web_accessible_resources.forEach((resource, index) => {
@@ -207,8 +198,7 @@ class ManifestTestSuite extends TestSuite {
 
         // デフォルトロケール検証
         this.test('Default locale validation', async (config) => {
-            const manifestPath = path.join(config.extensionPath, 'manifest.json');
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const manifest = await this.loadManifest(config);
             
             if (manifest.default_locale) {
                 const localesDir = path.join(config.extensionPath, '_locales', manifest.default_locale);

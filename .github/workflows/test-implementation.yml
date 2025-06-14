@@ -1,0 +1,57 @@
+name: Test Framework Implementation
+
+on:
+  push:
+    branches: [ feature/framework-implementation ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'lib/**'
+      - 'suites/**'
+      - 'test-*.js'
+
+jobs:
+  test-framework:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [16.x, 18.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Create test data directory
+      run: |
+        mkdir -p test-data/simple-extension
+        echo '{"manifest_version": 3, "name": "Test Extension", "version": "1.0.0", "description": "A simple test extension"}' > test-data/simple-extension/manifest.json
+    
+    - name: Run implementation tests
+      run: |
+        node test-implementation.js
+    
+    - name: Run detailed tests
+      run: |
+        node test-detailed.js
+    
+    - name: Upload test output
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-output-${{ matrix.os }}-node${{ matrix.node-version }}
+        path: test-output/
+        if-no-files-found: ignore
+    
+    - name: Test with sample extensions (if available)
+      run: |
+        if [ -d "samples" ]; then
+          echo "Testing with sample extensions..."
+          node samples/test-all.js || echo "Sample tests not available yet"
+        fi
+      shell: bash
