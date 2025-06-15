@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2025-06-15
+
+### Added
+- **FileNameValidator**: Comprehensive file name validation with platform compatibility checks
+  - Detects special characters, spaces, and other problematic patterns
+  - Platform-specific compatibility checks (Windows, macOS, Linux)
+  - Automatic fix suggestions for problematic file names
+  - Batch validation for entire directories
+- **DirectoryAnalyzer**: Advanced directory structure analysis
+  - Measures directory depth and complexity metrics
+  - Detects overly deep nesting (configurable threshold)
+  - Path length validation for Windows compatibility
+  - Identifies directories with too many files
+  - Generates structure visualization and improvement suggestions
+- **Test Scenarios Framework**: Real-world testing scenarios
+  - Edge case scenarios for testing framework improvements
+  - Automated scenario runner with expected results comparison
+  - Framework improvement suggestions based on test results
+- **Enhanced StructureTestSuite**: Improved file structure validation
+  - Integrated FileNameValidator for comprehensive naming checks
+  - Added directory depth analysis test
+  - Better error reporting with severity levels
+
+### Changed
+- StructureTestSuite now provides more detailed file naming issue reports
+- Improved file organization suggestions based on directory analysis
+
+### Fixed
+- Fixed special character detection to exclude file extensions
+- Improved error messages for file naming issues
+
 ## [1.5.0] - 2025-06-15
 
 ### Added
@@ -190,7 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.2.0...v1.3.0
