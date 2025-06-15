@@ -9,6 +9,7 @@ const TestCase = require('./lib/TestCase');
 const Validator = require('./lib/Validator');
 const Reporter = require('./lib/Reporter');
 const ConfigLoader = require('./lib/ConfigLoader');
+const ParallelRunner = require('./lib/ParallelRunner');
 
 // フレームワークのバージョン
 const VERSION = '1.0.0';
@@ -135,6 +136,18 @@ class ChromeExtensionTestFramework {
     async run() {
         const startTime = Date.now();
         
+        // 並列実行の判定
+        if (this.config.parallel && this.suites.length > 1) {
+            return this.runParallel(startTime);
+        } else {
+            return this.runSequential(startTime);
+        }
+    }
+
+    /**
+     * 順次実行
+     */
+    async runSequential(startTime) {
         // プログレス表示の開始
         const totalTests = this.suites.reduce((sum, suite) => sum + suite.tests.length, 0);
         this.testRunner.progressReporter.start(this.suites.length, totalTests);
@@ -167,6 +180,65 @@ class ChromeExtensionTestFramework {
 
         } catch (error) {
             console.error('❌ Test execution failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 並列実行
+     */
+    async runParallel(startTime) {
+        console.log('\n🚀 Running tests in parallel mode...\n');
+        
+        // 並列実行がサポートされているかチェック
+        if (!ParallelRunner.isSupported()) {
+            console.warn('⚠️  Parallel execution not supported, falling back to sequential mode');
+            return this.runSequential(startTime);
+        }
+
+        const parallelRunner = new ParallelRunner({
+            maxWorkers: ParallelRunner.getOptimalWorkerCount(this.suites.length)
+        });
+
+        // プログレスレポートのイベントリスナー
+        parallelRunner.on('suite-start', (info) => {
+            console.log(`🔄 Worker ${info.workerId}: Starting ${info.suite}`);
+        });
+
+        parallelRunner.on('progress', (info) => {
+            if (info.status === 'passed') {
+                console.log(`   ✅ ${info.test}`);
+            } else if (info.status === 'failed') {
+                console.log(`   ❌ ${info.test}`);
+            }
+        });
+
+        parallelRunner.on('suite-complete', (info) => {
+            console.log(`✅ Worker ${info.workerId}: Completed ${info.suite} (${info.passed} passed, ${info.failed} failed)`);
+        });
+
+        try {
+            // 並列実行
+            const parallelResults = await parallelRunner.runSuites(this.suites, this.config);
+            
+            // 結果を整形
+            const results = {
+                framework: VERSION,
+                timestamp: new Date().toISOString(),
+                config: this.config,
+                suites: parallelResults.suites,
+                summary: parallelResults.summary,
+                duration: parallelResults.execution.duration,
+                execution: parallelResults.execution
+            };
+
+            // レポートを生成
+            await this.reporter.generate(results);
+
+            return results;
+
+        } catch (error) {
+            console.error('❌ Parallel test execution failed:', error);
             throw error;
         }
     }

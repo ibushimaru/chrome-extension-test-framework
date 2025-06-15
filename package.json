@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-test-framework",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Universal testing framework for Chrome extensions - Fast static analysis without browser dependencies",
   "main": "index.js",
   "bin": {

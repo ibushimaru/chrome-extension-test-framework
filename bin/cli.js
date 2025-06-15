@@ -278,27 +278,81 @@ async function runTests() {
 
 // ウォッチモード
 if (options.watch) {
-    console.log(`👀 Watching for changes in: ${options.extensionPath}`);
+    const FileWatcher = require('../lib/FileWatcher');
     
     // 初回実行
-    runTests();
-    
-    // ファイル変更を監視
-    const watchDirs = [
-        options.extensionPath,
-        path.join(options.extensionPath, 'js'),
-        path.join(options.extensionPath, 'css'),
-        path.join(options.extensionPath, '_locales')
-    ].filter(dir => fs.existsSync(dir));
-    
-    watchDirs.forEach(dir => {
-        fs.watch(dir, { recursive: true }, (eventType, filename) => {
-            if (filename && !filename.includes('test-results')) {
-                console.log(`\n📝 File changed: ${filename}`);
-                console.log('Re-running tests...\n');
-                runTests();
+    console.log('🚀 Running initial tests...\n');
+    runTests().then(() => {
+        // ファイル監視を開始
+        const watcher = new FileWatcher({
+            extensionPath: options.extensionPath,
+            debounceTime: 500,
+            ignorePatterns: [
+                'node_modules',
+                '.git',
+                'test-results',
+                'test-output',
+                '.DS_Store',
+                'Thumbs.db',
+                '*.log',
+                '*.tmp'
+            ]
+        });
+
+        // テスト実行中フラグ
+        let isRunning = false;
+        
+        // 変更時の処理
+        watcher.on('change', async (changeInfo) => {
+            if (isRunning) {
+                console.log('   ⏳ Test already running, skipping...');
+                return;
+            }
+
+            isRunning = true;
+            console.log('\n🔄 Re-running tests...\n');
+            
+            try {
+                await runTests();
+            } catch (error) {
+                // エラーが発生してもウォッチモードは継続
+                console.error('Test execution error:', error.message);
+            } finally {
+                isRunning = false;
             }
         });
+
+        // 特定ファイルの変更に対する特別な処理
+        watcher.on('manifest-change', () => {
+            console.log('   ⚠️  manifest.json changed - full test suite will run');
+        });
+
+        // Ctrl+Cで終了
+        process.on('SIGINT', () => {
+            console.log('\n\n👋 Stopping watch mode...');
+            watcher.stop();
+            
+            // 統計を表示
+            const stats = watcher.getStats();
+            console.log('\n📊 Watch Mode Statistics:');
+            console.log(`   Total changes detected: ${stats.totalChanges}`);
+            console.log(`   Unique files changed: ${stats.changedFiles.size}`);
+            
+            if (Object.keys(stats.fileTypes).length > 0) {
+                console.log('\n   Changes by file type:');
+                Object.entries(stats.fileTypes).forEach(([type, count]) => {
+                    console.log(`   - ${type}: ${count}`);
+                });
+            }
+            
+            process.exit(0);
+        });
+
+        // ウォッチャーを開始
+        watcher.start();
+    }).catch(error => {
+        console.error('Initial test run failed:', error.message);
+        process.exit(1);
     });
 } else {
     // 通常実行

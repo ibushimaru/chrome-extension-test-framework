@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2025-06-15
+
+### Added
+- Watch mode functionality with `--watch` or `-w` flag
+- FileWatcher class for intelligent file change detection
+- Automatic test re-runs on file changes
+- Debouncing to prevent excessive test runs
+- Intelligent file type detection
+- Watch mode statistics on exit (Ctrl+C)
+- Ignore patterns for common non-extension files
+- Parallel test execution with `--parallel` flag
+- ParallelRunner class for managing worker processes
+- Worker thread-based test distribution
+- Automatic worker count optimization based on CPU cores
+- Worker utilization statistics
+- Parallel execution progress reporting
+- Event-driven architecture for file watching and parallel execution
+
+### Changed
+- CLI now supports --watch and --parallel options
+- Enhanced help documentation with new options
+- Test execution can now run in sequential or parallel mode
+- Improved performance for multi-suite test runs
+
+### Fixed
+- Reporter error handling for undefined errors array
+
 ## [1.3.0] - 2025-06-15
 
 ### Added
@@ -130,7 +157,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.0.1...v1.1.0
