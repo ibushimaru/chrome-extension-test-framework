@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "Old Chrome Version Test",
+    "version": "1.0.0",
+    "description": "Extension requiring very old Chrome version",
+    "minimum_chrome_version": "60",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "permissions": [
+        "storage",
+        "tabs",
+        "webRequest",
+        "webRequestBlocking"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ]
+}

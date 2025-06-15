@@ -1,0 +1,42 @@
+{
+  "errors": [
+    {
+      "type": "UNSAFE_CSP",
+      "severity": "high",
+      "message": "Content Security Policy allows 'unsafe-inline' and 'unsafe-eval'",
+      "file": "manifest.json"
+    },
+    {
+      "type": "INLINE_SCRIPT",
+      "severity": "high",
+      "message": "Inline script detected in HTML",
+      "file": "popup.html"
+    },
+    {
+      "type": "INLINE_EVENT_HANDLER",
+      "severity": "high",
+      "message": "Inline event handlers detected (onclick, onkeyup)",
+      "file": "popup.html"
+    },
+    {
+      "type": "UNSAFE_INNERHTML",
+      "severity": "high",
+      "message": "Using innerHTML with unsanitized user input",
+      "files": ["popup.html", "popup.js", "content.js"]
+    },
+    {
+      "type": "XSS_VULNERABILITY",
+      "severity": "critical",
+      "message": "Direct insertion of user input into DOM without sanitization",
+      "files": ["popup.js", "content.js"]
+    }
+  ],
+  "warnings": [
+    {
+      "type": "BROAD_CONTENT_SCRIPT",
+      "severity": "medium",
+      "message": "Content script matches all URLs",
+      "file": "manifest.json"
+    }
+  ]
+}

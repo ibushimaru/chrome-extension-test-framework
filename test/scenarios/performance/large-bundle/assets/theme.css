@@ -1,0 +1,85 @@
+/* Huge theme file with hundreds of unused CSS variables */
+
+:root {
+    /* Color palette - 200 shades */
+    --color-primary-0: hsl(210, 100%, 0%);
+    --color-primary-1: hsl(210, 100%, 1%);
+    --color-primary-2: hsl(210, 100%, 2%);
+    /* ... continues to 100 */
+    
+    --color-secondary-0: hsl(180, 100%, 0%);
+    --color-secondary-1: hsl(180, 100%, 1%);
+    /* ... continues to 100 */
+    
+    /* Spacing scale - way too detailed */
+    --space-0: 0px;
+    --space-1: 1px;
+    --space-2: 2px;
+    --space-3: 3px;
+    --space-4: 4px;
+    /* ... continues to 200 */
+    
+    /* Font sizes - excessive scale */
+    --font-size-0: 0px;
+    --font-size-1: 1px;
+    --font-size-2: 2px;
+    /* ... continues to 100 */
+    
+    /* Border radius - too many options */
+    --radius-0: 0px;
+    --radius-1: 1px;
+    --radius-2: 2px;
+    /* ... continues to 50 */
+    
+    /* Shadows - complex unused shadows */
+    --shadow-0: none;
+    --shadow-1: 0 1px 2px rgba(0,0,0,0.1);
+    --shadow-2: 0 2px 4px rgba(0,0,0,0.1);
+    /* ... continues to 20 */
+    
+    /* Z-index scale */
+    --z-0: 0;
+    --z-10: 10;
+    --z-20: 20;
+    /* ... continues to 1000 */
+    
+    /* Timing functions */
+    --ease-linear: linear;
+    --ease-in: ease-in;
+    --ease-out: ease-out;
+    --ease-in-out: ease-in-out;
+    --ease-in-quad: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+    --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* ... continues with 20 more */
+    
+    /* Unused gradients */
+    --gradient-1: linear-gradient(to right, #ff0000, #00ff00);
+    --gradient-2: linear-gradient(to right, #00ff00, #0000ff);
+    /* ... continues to 50 */
+}
+
+/* Dark theme (unused) */
+[data-theme="dark"] {
+    /* Duplicate all variables for dark theme */
+    --color-primary-0: hsl(210, 100%, 100%);
+    --color-primary-1: hsl(210, 100%, 99%);
+    /* ... all variables repeated */
+}
+
+/* Component themes (all unused) */
+.theme-button {
+    /* 50 lines of unused button styles */
+}
+
+.theme-card {
+    /* 50 lines of unused card styles */
+}
+
+.theme-modal {
+    /* 50 lines of unused modal styles */
+}
+
+/* Only this is actually used */
+#app {
+    color: var(--color-primary-50, #333);
+}

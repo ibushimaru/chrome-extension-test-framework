@@ -1,0 +1,8 @@
+{
+    "extensionDescription": {
+        "message": "Extension with mixed hardcoded and localized text"
+    },
+    "greeting": {
+        "message": "Hello, user!"
+    }
+}

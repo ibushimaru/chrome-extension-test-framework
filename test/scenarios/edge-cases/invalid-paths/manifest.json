@@ -1,0 +1,25 @@
+{
+    "manifest_version": 3,
+    "name": "Invalid Paths Test",
+    "version": "1.0.0",
+    "description": "Extension with references to non-existent files",
+    "background": {
+        "service_worker": "background/worker.js"
+    },
+    "action": {
+        "default_popup": "popup/index.html",
+        "default_icon": {
+            "16": "icons/missing-16.png",
+            "48": "icons/missing-48.png",
+            "128": "icons/missing-128.png"
+        }
+    },
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "js": ["scripts/content.js", "scripts/helper.js"]
+    }],
+    "web_accessible_resources": [{
+        "resources": ["assets/data.json", "images/logo.png"],
+        "matches": ["<all_urls>"]
+    }]
+}

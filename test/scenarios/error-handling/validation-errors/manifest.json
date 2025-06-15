@@ -1,0 +1,7 @@
+{
+    "manifest_version": 2,
+    "name": "",
+    "version": "invalid-version",
+    "description": "A very long description that exceeds the Chrome Web Store's 132 character limit. This description is intentionally made too long to trigger validation errors in the test framework.",
+    "permissions": ["invalid-permission", "https://*/"]
+}

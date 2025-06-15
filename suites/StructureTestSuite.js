@@ -5,6 +5,8 @@
 const TestSuite = require('../lib/TestSuite');
 const fs = require('fs');
 const path = require('path');
+const FileNameValidator = require('../lib/FileNameValidator');
+const DirectoryAnalyzer = require('../lib/DirectoryAnalyzer');
 
 class StructureTestSuite extends TestSuite {
     constructor(config) {
@@ -48,35 +50,67 @@ class StructureTestSuite extends TestSuite {
             }
         });
 
-        // ファイル命名規則
+        // ファイル命名規則（改善版）
         this.test('File naming conventions', async (config) => {
-            const allFiles = await this.getAllFiles();
-            const issues = [];
+            const fileValidator = new FileNameValidator({
+                checkPlatformCompatibility: true,
+                autoFixSuggestions: true,
+                excludeManager: this.config.excludeManager
+            });
             
-            for (const file of allFiles) {
-                const basename = path.basename(file);
-                
-                // スペースを含むファイル名
-                if (basename.includes(' ')) {
-                    issues.push(`Space in filename: ${file}`);
-                }
-                
-                // 特殊文字を含むファイル名
-                if (/[^a-zA-Z0-9._-]/.test(basename)) {
-                    issues.push(`Special characters in filename: ${file}`);
-                }
-                
-                // 大文字で始まるファイル（画像とREADMEを除く）
-                if (/^[A-Z]/.test(basename) && 
-                    !basename.startsWith('README') && 
-                    !basename.startsWith('LICENSE') &&
-                    !basename.startsWith('CHANGELOG')) {
-                    console.log(`   💡 Consider lowercase: ${file}`);
-                }
+            const results = await fileValidator.validateDirectory(config.extensionPath);
+            
+            // エラーと警告の表示
+            let hasIssues = false;
+            
+            // クリティカルなエラーを表示
+            const criticalErrors = results.errors.filter(e => e.severity === 'critical');
+            if (criticalErrors.length > 0) {
+                criticalErrors.forEach(error => {
+                    console.error(`   🚨 ${error.message}`);
+                    if (error.details) console.error(`      → ${error.details}`);
+                });
+                hasIssues = true;
             }
             
-            if (issues.length > 0) {
-                issues.forEach(issue => console.warn(`   ⚠️  ${issue}`));
+            // その他のエラーを表示
+            const otherErrors = results.errors.filter(e => e.severity !== 'critical');
+            if (otherErrors.length > 0) {
+                otherErrors.forEach(error => {
+                    console.warn(`   ❌ ${error.message}`);
+                    if (error.details) console.warn(`      → ${error.details}`);
+                });
+                hasIssues = true;
+            }
+            
+            // 重要な警告を表示
+            const highWarnings = results.warnings.filter(w => w.severity === 'high');
+            if (highWarnings.length > 0) {
+                highWarnings.forEach(warning => {
+                    console.warn(`   ⚠️  ${warning.message}`);
+                });
+                hasIssues = true;
+            }
+            
+            // 修正提案を表示
+            if (results.suggestions.length > 0 && config.verbose) {
+                console.log('   💡 Suggested fixes:');
+                results.suggestions.forEach(suggestion => {
+                    console.log(`      - Rename "${suggestion.original}" to "${suggestion.suggested}"`);
+                });
+            }
+            
+            // サマリー
+            if (results.problematicFiles > 0) {
+                console.log(`   📊 ${results.problematicFiles}/${results.totalFiles} files have naming issues`);
+            }
+            
+            // クリティカルなエラーがある場合は例外を投げる
+            if (criticalErrors.length > 0) {
+                const error = new Error(`Critical file naming issues detected: ${criticalErrors.length} files`);
+                error.code = 'FILE_NAMING_CRITICAL';
+                error.details = results;
+                throw error;
             }
         });
 
@@ -251,6 +285,81 @@ class StructureTestSuite extends TestSuite {
             
             if (misplacedFiles.length > 0) {
                 console.warn(`   ⚠️  Files in root directory should be organized: ${misplacedFiles.join(', ')}`);
+            }
+        });
+
+        // ディレクトリ構造の深度分析
+        this.test('Directory depth analysis', async (config) => {
+            const analyzer = new DirectoryAnalyzer({
+                maxDepth: 5,
+                maxPathLength: 260,
+                maxFilesPerDirectory: 50,
+                excludeManager: this.config.excludeManager
+            });
+            
+            const analysis = await analyzer.analyze(config.extensionPath);
+            const report = analyzer.generateReport();
+            
+            // メトリクスの表示
+            if (config.verbose) {
+                console.log('   📊 Directory structure metrics:');
+                console.log(`      - Total files: ${report.summary.totalFiles}`);
+                console.log(`      - Total directories: ${report.summary.totalDirectories}`);
+                console.log(`      - Max depth: ${report.summary.maxDepth}`);
+                console.log(`      - Average depth: ${report.summary.averageDepth}`);
+                if (analysis.metrics.deepestPath) {
+                    console.log(`      - Deepest path: ${analysis.metrics.deepestPath}`);
+                }
+            }
+            
+            // 問題の表示
+            if (analysis.issues.length > 0) {
+                analysis.issues.forEach(issue => {
+                    const icon = issue.severity === 'critical' ? '🚨' :
+                                issue.severity === 'high' ? '❌' :
+                                issue.severity === 'medium' ? '⚠️' : '💡';
+                    console.warn(`   ${icon} ${issue.message}`);
+                    if (issue.details) {
+                        console.warn(`      → ${issue.details}`);
+                    }
+                    if (issue.recommendation) {
+                        console.log(`      💡 ${issue.recommendation}`);
+                    }
+                });
+            }
+            
+            // 提案の表示
+            if (analysis.suggestions.length > 0 && config.verbose) {
+                console.log('   💡 Structure improvements:');
+                analysis.suggestions.forEach(suggestion => {
+                    console.log(`      - ${suggestion.suggestion}`);
+                    if (suggestion.examples) {
+                        suggestion.examples.forEach(example => {
+                            console.log(`        • ${example}`);
+                        });
+                    }
+                });
+            }
+            
+            // ツリー表示（詳細モード）
+            if (config.verbose && analysis.issues.length > 0) {
+                console.log('   📁 Directory tree:');
+                const treeLines = report.tree.split('\n');
+                treeLines.slice(0, 20).forEach(line => {
+                    console.log(`      ${line}`);
+                });
+                if (treeLines.length > 20) {
+                    console.log(`      ... (${treeLines.length - 20} more lines)`);
+                }
+            }
+            
+            // クリティカルな問題がある場合は例外を投げる
+            const criticalIssues = analysis.issues.filter(i => i.severity === 'critical');
+            if (criticalIssues.length > 0) {
+                const error = new Error(`Critical directory structure issues: ${criticalIssues[0].message}`);
+                error.code = 'DIRECTORY_STRUCTURE_CRITICAL';
+                error.details = analysis;
+                throw error;
             }
         });
     }

@@ -1,0 +1,30 @@
+{
+    "extensionName": {
+        "message": "プレースホルダーテスト"
+    },
+    "extensionDescription": {
+        "message": "i18nにおけるプレースホルダー機能のテスト"
+    },
+    "welcomeUser": {
+        "message": "$USER$さん、ようこそ！",
+        "placeholders": {
+            "user": {
+                "content": "$1",
+                "example": "太郎"
+            }
+        }
+    },
+    "itemCount": {
+        "message": "$ITEM$が$COUNT$個あります",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "5"
+            },
+            "item": {
+                "content": "$2",
+                "example": "メッセージ"
+            }
+        }
+    }
+}

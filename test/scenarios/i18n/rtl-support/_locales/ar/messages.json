@@ -1,0 +1,14 @@
+{
+    "extensionName": {
+        "message": "اختبار دعم RTL"
+    },
+    "extensionDescription": {
+        "message": "اختبار دعم اللغات من اليمين إلى اليسار"
+    },
+    "actionTitle": {
+        "message": "فتح النافذة المنبثقة"
+    },
+    "direction": {
+        "message": "rtl"
+    }
+}

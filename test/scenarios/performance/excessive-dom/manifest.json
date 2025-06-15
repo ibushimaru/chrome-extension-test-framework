@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Excessive DOM Extension",
+  "version": "1.0.0",
+  "description": "Extension that creates excessive DOM elements",
+  "permissions": ["tabs", "storage"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

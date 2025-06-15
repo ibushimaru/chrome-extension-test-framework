@@ -5,6 +5,8 @@
 const TestSuite = require('../lib/TestSuite');
 const fs = require('fs');
 const path = require('path');
+const SecurityAnalyzer = require('../lib/SecurityAnalyzer');
+const StorageAnalyzer = require('../lib/StorageAnalyzer');
 
 class SecurityTestSuite extends TestSuite {
     constructor(config) {
@@ -251,6 +253,138 @@ class SecurityTestSuite extends TestSuite {
                 if (/window\.postMessage/g.test(content)) {
                     console.warn(`   ⚠️  window.postMessage usage in ${path.basename(jsFile)} - ensure origin validation`);
                 }
+            }
+        });
+
+        // 高度なセキュリティ分析
+        this.test('Advanced security analysis', async (config) => {
+            const analyzer = new SecurityAnalyzer();
+            const results = await analyzer.analyze(config.extensionPath);
+            const report = analyzer.generateReport();
+            
+            // クリティカルな問題がある場合はエラー
+            if (report.summary.critical > 0) {
+                const criticalIssues = report.issuesBySeverity.critical
+                    .map(issue => `${issue.file}:${issue.line} - ${issue.message}`)
+                    .join('\n   ');
+                throw new Error(`Critical security issues found:\n   ${criticalIssues}`);
+            }
+            
+            // 高リスクの問題がある場合は警告
+            if (report.summary.high > 0) {
+                console.warn(`   ⚠️  ${report.summary.high} high-risk security issues found`);
+                report.issuesBySeverity.high.forEach(issue => {
+                    console.warn(`      - ${issue.file}:${issue.line} - ${issue.type}`);
+                });
+            }
+            
+            // 中リスクの問題
+            if (report.summary.medium > 0) {
+                console.warn(`   ⚠️  ${report.summary.medium} medium-risk security issues found`);
+            }
+            
+            console.log(`   📊 Security scan complete: ${report.summary.scannedFiles} files analyzed`);
+        });
+
+        // APIキーとシークレットの検出
+        this.test('No hardcoded secrets', async (config) => {
+            const analyzer = new SecurityAnalyzer();
+            const results = await analyzer.analyze(config.extensionPath);
+            
+            const secretIssues = results.issues.filter(issue => 
+                issue.type.includes('API Key') || 
+                issue.type.includes('Private Key') ||
+                issue.type.includes('Secret') ||
+                issue.type.includes('Password') ||
+                issue.type.includes('Token')
+            );
+            
+            if (secretIssues.length > 0) {
+                const secrets = secretIssues
+                    .map(issue => `${issue.file}:${issue.line} - ${issue.type}`)
+                    .join('\n   ');
+                throw new Error(`Hardcoded secrets detected:\n   ${secrets}`);
+            }
+        });
+
+        // 安全なストレージの使用
+        this.test('Secure data storage', async (config) => {
+            const jsFiles = await this.findFiles(config.extensionPath, '.js');
+            const issues = [];
+            
+            for (const jsFile of jsFiles) {
+                const content = fs.readFileSync(jsFile, 'utf8');
+                const fileName = path.basename(jsFile);
+                
+                // localStorage/sessionStorageでの機密データ保存チェック
+                const sensitiveStoragePatterns = [
+                    /localStorage\.(setItem|getItem)\s*\(\s*['"]?(password|token|key|secret|credential)/gi,
+                    /sessionStorage\.(setItem|getItem)\s*\(\s*['"]?(password|token|key|secret|credential)/gi
+                ];
+                
+                sensitiveStoragePatterns.forEach(pattern => {
+                    const matches = content.match(pattern);
+                    if (matches) {
+                        issues.push(`${fileName}: Sensitive data in browser storage - ${matches[0]}`);
+                    }
+                });
+                
+                // 暗号化されていないデータの保存
+                if (/localStorage|sessionStorage/g.test(content) && 
+                    !/encrypt|crypto|cipher/gi.test(content)) {
+                    console.warn(`   ⚠️  ${fileName} uses browser storage without apparent encryption`);
+                }
+            }
+            
+            if (issues.length > 0) {
+                throw new Error(`Insecure storage detected:\n   ${issues.join('\n   ')}`);
+            }
+        });
+
+        // Chrome Storage APIの使用パターン検証
+        this.test('Chrome storage API usage patterns', async (config) => {
+            const analyzer = new StorageAnalyzer();
+            const results = await analyzer.analyze(config.extensionPath);
+            
+            // 結果の表示
+            if (results.summary.deprecatedStorageUsage > 0) {
+                console.warn(`   ⚠️  Deprecated storage APIs detected: ${results.summary.deprecatedStorageUsage} occurrences`);
+                
+                // localStorage使用の詳細
+                if (results.usage.localStorage.length > 0) {
+                    console.warn(`   📦 localStorage usage in ${results.usage.localStorage.length} files`);
+                    results.usage.localStorage.forEach(item => {
+                        console.warn(`      - ${item.file}: ${item.occurrences} occurrences`);
+                    });
+                }
+                
+                // sessionStorage使用の詳細
+                if (results.usage.sessionStorage.length > 0) {
+                    console.warn(`   📦 sessionStorage usage in ${results.usage.sessionStorage.length} files`);
+                    results.usage.sessionStorage.forEach(item => {
+                        console.warn(`      - ${item.file}: ${item.occurrences} occurrences`);
+                    });
+                }
+            }
+            
+            // chrome.storage使用状況
+            if (results.summary.chromeStorageUsage > 0) {
+                console.log(`   ✅ chrome.storage API usage: ${results.summary.chromeStorageUsage} calls`);
+            }
+            
+            // 重大な問題がある場合はエラー
+            const criticalIssues = results.issues.filter(issue => issue.severity === 'error');
+            if (criticalIssues.length > 0) {
+                throw new Error(`Critical storage issues found:\n   ${criticalIssues.map(i => i.message).join('\n   ')}`);
+            }
+            
+            // 推奨事項の表示
+            if (results.summary.recommendations.length > 0) {
+                results.summary.recommendations.forEach(rec => {
+                    if (rec.priority === 'high') {
+                        console.warn(`   💡 ${rec.message}`);
+                    }
+                });
             }
         });
     }

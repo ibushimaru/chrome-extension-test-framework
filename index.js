@@ -9,9 +9,15 @@ const TestCase = require('./lib/TestCase');
 const Validator = require('./lib/Validator');
 const Reporter = require('./lib/Reporter');
 const ConfigLoader = require('./lib/ConfigLoader');
+const ParallelRunner = require('./lib/ParallelRunner');
+const ExcludeManager = require('./lib/ExcludeManager');
+const WarningManager = require('./lib/WarningManager');
+const ProfileManager = require('./lib/ProfileManager');
+const IncrementalTester = require('./lib/IncrementalTester');
+const VersionChecker = require('./lib/VersionChecker');
 
 // フレームワークのバージョン
-const VERSION = '1.0.0';
+const VERSION = '1.8.0';
 
 // デフォルト設定
 const DEFAULT_CONFIG = {
@@ -57,6 +63,20 @@ class ChromeExtensionTestFramework {
         this.testRunner = new TestRunner(this.config);
         this.reporter = new Reporter(this.config);
         this.suites = [];
+        
+        // 新しいマネージャーを初期化
+        this.excludeManager = new ExcludeManager(this.config);
+        this.warningManager = new WarningManager(this.config);
+        this.profileManager = new ProfileManager(this.config);
+        this.incrementalTester = new IncrementalTester({
+            extensionPath: this.config.extensionPath,
+            excludeManager: this.excludeManager
+        });
+        
+        // プロファイルが指定されている場合は適用
+        if (this.config.profile) {
+            this.applyProfile(this.config.profile);
+        }
     }
 
     /**
@@ -66,6 +86,31 @@ class ChromeExtensionTestFramework {
         const loadedConfig = await this.configLoader.load(configPath);
         this.config = { ...this.config, ...loadedConfig };
         this.testRunner.updateConfig(this.config);
+        
+        // マネージャーを更新
+        this.excludeManager = new ExcludeManager(this.config);
+        this.warningManager.updateConfig(this.config);
+        
+        return this;
+    }
+    
+    /**
+     * プロファイルを適用
+     */
+    applyProfile(profileName) {
+        this.config = this.profileManager.applyProfile(profileName, this.config);
+        
+        // マネージャーを更新
+        this.excludeManager = new ExcludeManager(this.config);
+        this.warningManager.updateConfig(this.config);
+        this.testRunner.updateConfig(this.config);
+        
+        console.log(`📋 Using profile: ${profileName}`);
+        const profile = this.profileManager.getProfile(profileName);
+        if (profile.description) {
+            console.log(`   ${profile.description}`);
+        }
+        
         return this;
     }
 
@@ -77,7 +122,14 @@ class ChromeExtensionTestFramework {
             this.suites.push(suite);
         } else if (typeof suite === 'object') {
             // オブジェクトからTestSuiteを作成
-            this.suites.push(new TestSuite(suite));
+            const suiteOptions = {
+                ...suite,
+                config: {
+                    ...suite.config,
+                    excludeManager: this.excludeManager
+                }
+            };
+            this.suites.push(new TestSuite(suiteOptions));
         }
         return this;
     }
@@ -95,7 +147,11 @@ class ChromeExtensionTestFramework {
         ];
 
         builtinSuites.forEach(Suite => {
-            this.addSuite(new Suite(this.config));
+            const suiteConfig = {
+                ...this.config,
+                excludeManager: this.excludeManager
+            };
+            this.addSuite(new Suite(suiteConfig));
         });
 
         return this;
@@ -135,6 +191,24 @@ class ChromeExtensionTestFramework {
     async run() {
         const startTime = Date.now();
         
+        // バージョンチェック（--no-version-checkで無効化可能）
+        if (!this.config.noVersionCheck) {
+            const versionChecker = new VersionChecker();
+            await versionChecker.checkAndNotify();
+        }
+        
+        // 並列実行の判定
+        if (this.config.parallel && this.suites.length > 1) {
+            return this.runParallel(startTime);
+        } else {
+            return this.runSequential(startTime);
+        }
+    }
+
+    /**
+     * 順次実行
+     */
+    async runSequential(startTime) {
         // プログレス表示の開始
         const totalTests = this.suites.reduce((sum, suite) => sum + suite.tests.length, 0);
         this.testRunner.progressReporter.start(this.suites.length, totalTests);
@@ -167,6 +241,65 @@ class ChromeExtensionTestFramework {
 
         } catch (error) {
             console.error('❌ Test execution failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 並列実行
+     */
+    async runParallel(startTime) {
+        console.log('\n🚀 Running tests in parallel mode...\n');
+        
+        // 並列実行がサポートされているかチェック
+        if (!ParallelRunner.isSupported()) {
+            console.warn('⚠️  Parallel execution not supported, falling back to sequential mode');
+            return this.runSequential(startTime);
+        }
+
+        const parallelRunner = new ParallelRunner({
+            maxWorkers: ParallelRunner.getOptimalWorkerCount(this.suites.length)
+        });
+
+        // プログレスレポートのイベントリスナー
+        parallelRunner.on('suite-start', (info) => {
+            console.log(`🔄 Worker ${info.workerId}: Starting ${info.suite}`);
+        });
+
+        parallelRunner.on('progress', (info) => {
+            if (info.status === 'passed') {
+                console.log(`   ✅ ${info.test}`);
+            } else if (info.status === 'failed') {
+                console.log(`   ❌ ${info.test}`);
+            }
+        });
+
+        parallelRunner.on('suite-complete', (info) => {
+            console.log(`✅ Worker ${info.workerId}: Completed ${info.suite} (${info.passed} passed, ${info.failed} failed)`);
+        });
+
+        try {
+            // 並列実行
+            const parallelResults = await parallelRunner.runSuites(this.suites, this.config);
+            
+            // 結果を整形
+            const results = {
+                framework: VERSION,
+                timestamp: new Date().toISOString(),
+                config: this.config,
+                suites: parallelResults.suites,
+                summary: parallelResults.summary,
+                duration: parallelResults.execution.duration,
+                execution: parallelResults.execution
+            };
+
+            // レポートを生成
+            await this.reporter.generate(results);
+
+            return results;
+
+        } catch (error) {
+            console.error('❌ Parallel test execution failed:', error);
             throw error;
         }
     }

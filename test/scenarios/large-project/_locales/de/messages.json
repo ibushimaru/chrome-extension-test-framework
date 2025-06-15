@@ -1,0 +1,54 @@
+{
+    "extensionName": {
+        "message": "Großes Erweiterungsprojekt",
+        "description": "Extension name"
+    },
+    "extensionDescription": {
+        "message": "A comprehensive Chrome extension with multiple features",
+        "description": "Extension description"
+    },
+    "actionTitle": {
+        "message": "Click to open",
+        "description": "Action button tooltip"
+    },
+    "popupTitle": {
+        "message": "Extension Control Panel",
+        "description": "Popup window title"
+    },
+    "statusTitle": {
+        "message": "Current Status",
+        "description": "Status section title"
+    },
+    "statusActive": {
+        "message": "Aktiv",
+        "description": "Active status"
+    },
+    "statusInactive": {
+        "message": "Inactive",
+        "description": "Inactive status"
+    },
+    "toggleButton": {
+        "message": "Toggle Feature",
+        "description": "Toggle button text"
+    },
+    "settingsButton": {
+        "message": "Settings",
+        "description": "Settings button text"
+    },
+    "statsTitle": {
+        "message": "Statistics",
+        "description": "Statistics section title"
+    },
+    "totalLabel": {
+        "message": "Total",
+        "description": "Total count label"
+    },
+    "todayLabel": {
+        "message": "Today",
+        "description": "Today count label"
+    },
+    "helpLink": {
+        "message": "Help & Support",
+        "description": "Help link text"
+    }
+}

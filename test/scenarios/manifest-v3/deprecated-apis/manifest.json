@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "Deprecated APIs Test",
+    "version": "1.0.0",
+    "description": "Tests for deprecated Manifest V2 APIs",
+    "browser_action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.png"
+    },
+    "permissions": [
+        "webRequest",
+        "webRequestBlocking",
+        "tabs"
+    ]
+}

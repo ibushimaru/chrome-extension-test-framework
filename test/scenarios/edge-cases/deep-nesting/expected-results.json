@@ -1,0 +1,33 @@
+{
+    "description": "過度に深いディレクトリ構造を持つ拡張機能",
+    "expectedWarnings": [
+        {
+            "type": "deep-nesting",
+            "message": "Directory structure is too deep (9 levels)",
+            "severity": "medium"
+        },
+        {
+            "type": "path-length",
+            "message": "File paths may exceed system limits on some platforms",
+            "severity": "high"
+        },
+        {
+            "type": "maintainability",
+            "message": "Deep nesting makes code harder to maintain",
+            "severity": "medium"
+        }
+    ],
+    "expectedErrors": [],
+    "frameworkImprovements": [
+        "ディレクトリ深度の分析機能",
+        "パス長の制限チェック（Windows: 260文字）",
+        "ディレクトリ構造の複雑度メトリクス",
+        "リファクタリング提案機能"
+    ],
+    "suggestedFixes": [
+        "ディレクトリ構造のフラット化",
+        "モジュールの再編成",
+        "バレル exports の使用",
+        "エイリアスパスの設定"
+    ]
+}

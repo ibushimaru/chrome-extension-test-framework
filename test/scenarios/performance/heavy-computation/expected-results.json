@@ -1,0 +1,57 @@
+{
+  "expected": {
+    "shouldFail": true,
+    "failingTests": [
+      "JavaScript optimization",
+      "Service worker efficiency",
+      "Loading time optimization",
+      "Animation performance"
+    ],
+    "issues": [
+      {
+        "type": "blocking_computation",
+        "severity": "critical",
+        "file": "background.js",
+        "patterns": [
+          "Synchronous heavy calculations in message handlers",
+          "Large array processing without chunking",
+          "Recursive algorithms without optimization",
+          "Inefficient prime number calculation",
+          "Blocking initialization code",
+          "Nested loops with O(n²) complexity"
+        ]
+      },
+      {
+        "type": "main_thread_blocking",
+        "severity": "critical",
+        "file": "content.js",
+        "patterns": [
+          "Synchronous DOM manipulation in loops",
+          "Heavy computation in scroll handlers",
+          "Synchronous image processing",
+          "Inefficient text analysis algorithms",
+          "Blocking animations without requestAnimationFrame"
+        ]
+      },
+      {
+        "type": "ui_freezing",
+        "severity": "high",
+        "file": "popup.js",
+        "patterns": [
+          "Exponential time complexity algorithms",
+          "Inefficient sorting algorithms",
+          "Synchronous heavy calculations in event handlers",
+          "Continuous background computations"
+        ]
+      }
+    ],
+    "suggestions": [
+      "Use Web Workers for heavy computations",
+      "Implement chunking for large data processing",
+      "Use requestAnimationFrame for animations",
+      "Debounce/throttle event handlers",
+      "Optimize algorithms (memoization, better complexity)",
+      "Move heavy initialization to lazy loading"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "Experimental APIs Test",
+    "version": "1.0.0",
+    "description": "Extension using experimental Chrome APIs",
+    "minimum_chrome_version": "120",
+    "permissions": [
+        "experimental",
+        "webGPU",
+        "fileSystemAccess",
+        "tabCapture",
+        "offscreen"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    }
+}
