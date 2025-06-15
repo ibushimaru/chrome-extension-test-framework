@@ -10,9 +10,13 @@ const Validator = require('./lib/Validator');
 const Reporter = require('./lib/Reporter');
 const ConfigLoader = require('./lib/ConfigLoader');
 const ParallelRunner = require('./lib/ParallelRunner');
+const ExcludeManager = require('./lib/ExcludeManager');
+const WarningManager = require('./lib/WarningManager');
+const ProfileManager = require('./lib/ProfileManager');
+const IncrementalTester = require('./lib/IncrementalTester');
 
 // フレームワークのバージョン
-const VERSION = '1.0.0';
+const VERSION = '1.5.0';
 
 // デフォルト設定
 const DEFAULT_CONFIG = {
@@ -58,6 +62,20 @@ class ChromeExtensionTestFramework {
         this.testRunner = new TestRunner(this.config);
         this.reporter = new Reporter(this.config);
         this.suites = [];
+        
+        // 新しいマネージャーを初期化
+        this.excludeManager = new ExcludeManager(this.config);
+        this.warningManager = new WarningManager(this.config);
+        this.profileManager = new ProfileManager(this.config);
+        this.incrementalTester = new IncrementalTester({
+            extensionPath: this.config.extensionPath,
+            excludeManager: this.excludeManager
+        });
+        
+        // プロファイルが指定されている場合は適用
+        if (this.config.profile) {
+            this.applyProfile(this.config.profile);
+        }
     }
 
     /**
@@ -67,6 +85,31 @@ class ChromeExtensionTestFramework {
         const loadedConfig = await this.configLoader.load(configPath);
         this.config = { ...this.config, ...loadedConfig };
         this.testRunner.updateConfig(this.config);
+        
+        // マネージャーを更新
+        this.excludeManager = new ExcludeManager(this.config);
+        this.warningManager.updateConfig(this.config);
+        
+        return this;
+    }
+    
+    /**
+     * プロファイルを適用
+     */
+    applyProfile(profileName) {
+        this.config = this.profileManager.applyProfile(profileName, this.config);
+        
+        // マネージャーを更新
+        this.excludeManager = new ExcludeManager(this.config);
+        this.warningManager.updateConfig(this.config);
+        this.testRunner.updateConfig(this.config);
+        
+        console.log(`📋 Using profile: ${profileName}`);
+        const profile = this.profileManager.getProfile(profileName);
+        if (profile.description) {
+            console.log(`   ${profile.description}`);
+        }
+        
         return this;
     }
 

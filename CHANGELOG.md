@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2025-06-15
+
+### Added
+- Exclude patterns functionality with `--exclude` flag
+- Include patterns functionality with `--include` flag
+- Warning level configuration system
+- Profile support with built-in profiles (development, production, ci, quick)
+- Custom profile creation capability
+- Known issues tracking with reasons
+- Context-based exclusions (development/production/ci)
+- Incremental testing with `--changed` and `--since-last-run` flags
+- Test cache management with `--clear-cache` flag
+- Git-based change detection for incremental testing
+- Hash-based file change detection
+- Time-based change detection
+- Automatic test suite selection based on changed files
+- ExcludeManager class for advanced pattern matching
+- WarningManager class for flexible warning configuration
+- ProfileManager class for test profiles
+- IncrementalTester class for smart test execution
+- Advanced configuration example (examples/config-advanced.js)
+
+### Changed
+- CLI now supports exclude/include patterns and profiles
+- Test execution can be filtered based on file changes
+- Warning severity can be customized per warning type
+- Configuration files now support advanced exclude patterns
+- Improved test execution efficiency with incremental testing
+
+### Fixed
+- Pattern matching for complex glob patterns
+- Warning level inheritance in test files
+
 ## [1.4.0] - 2025-06-15
 
 ### Added
@@ -157,7 +190,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.1.0...v1.2.0

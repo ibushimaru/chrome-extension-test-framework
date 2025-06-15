@@ -27,7 +27,15 @@ const options = {
     parallel: false,
     watch: false,
     fix: false,
-    fixDryRun: false
+    fixDryRun: false,
+    exclude: [],
+    include: [],
+    profile: null,
+    failOnWarning: false,
+    failOnError: false,
+    changed: false,
+    sinceLastRun: false,
+    clearCache: false
 };
 
 // 引数を解析
@@ -96,6 +104,38 @@ for (let i = 0; i < args.length; i++) {
             options.fix = true;
             break;
             
+        case '--exclude':
+            options.exclude = args[++i].split(',');
+            break;
+            
+        case '--include':
+            options.include = args[++i].split(',');
+            break;
+            
+        case '--profile':
+            options.profile = args[++i];
+            break;
+            
+        case '--fail-on-warning':
+            options.failOnWarning = true;
+            break;
+            
+        case '--fail-on-error':
+            options.failOnError = true;
+            break;
+            
+        case '--changed':
+            options.changed = true;
+            break;
+            
+        case '--since-last-run':
+            options.sinceLastRun = true;
+            break;
+            
+        case '--clear-cache':
+            options.clearCache = true;
+            break;
+            
         default:
             if (!arg.startsWith('-')) {
                 options.extensionPath = path.resolve(arg);
@@ -124,6 +164,14 @@ Options:
   --verbose               Show detailed progress information
   --fix                   Automatically fix common issues
   --fix-dry-run           Show what would be fixed without making changes
+  --exclude <patterns>    Exclude files/directories (comma-separated glob patterns)
+  --include <patterns>    Include only specific files/directories
+  --profile <name>        Use a predefined profile (development, production, ci, quick)
+  --fail-on-warning       Exit with error code if warnings are found
+  --fail-on-error         Exit with error code if errors are found
+  --changed               Test only changed files (requires git)
+  --since-last-run        Test only files changed since last run
+  --clear-cache           Clear the test cache
 
 Test Suites:
   manifest      - Validate manifest.json
@@ -141,6 +189,11 @@ Examples:
   cext-test -c my-config.json         # Use custom config file
   cext-test --fix                     # Automatically fix issues
   cext-test --fix-dry-run             # Preview fixes without applying them
+  cext-test --exclude "test/**,docs/**" # Exclude test and docs directories
+  cext-test --include "js/**,css/**"    # Test only js and css files
+  cext-test --profile production        # Use production profile
+  cext-test --changed                   # Test only changed files (git)
+  cext-test --since-last-run            # Test files changed since last run
 
 Configuration:
   Create a cext-test.config.js or .cextrc.json file for custom settings:
@@ -230,12 +283,58 @@ async function runTests() {
         const framework = new ChromeExtensionTestFramework({
             extensionPath: options.extensionPath,
             output: options.output,
-            parallel: options.parallel
+            parallel: options.parallel,
+            exclude: options.exclude,
+            include: options.include,
+            failOnWarning: options.failOnWarning,
+            failOnError: options.failOnError,
+            profile: options.profile,
+            progress: options.progress,
+            verbose: options.verbose
         });
 
         // 設定ファイルを読み込み
         if (options.config) {
             await framework.loadConfig(options.config);
+        }
+        
+        // プロファイルが指定されている場合（設定ファイル後に適用）
+        if (options.profile && !framework.config.profile) {
+            framework.applyProfile(options.profile);
+        }
+        
+        // キャッシュクリアオプション
+        if (options.clearCache) {
+            console.log('🗑️  Clearing test cache...');
+            framework.incrementalTester.clearCache();
+            console.log('✅ Cache cleared');
+            if (!options.changed && !options.sinceLastRun) {
+                return;
+            }
+        }
+        
+        // インクリメンタルテストの判定
+        if (options.changed || options.sinceLastRun) {
+            const testTargets = await framework.incrementalTester.determineTestTargets({
+                all: false,
+                useGit: options.changed,
+                sinceLastRun: options.sinceLastRun
+            });
+            
+            console.log(`\n🔍 Incremental test mode: ${testTargets.reason}`);
+            
+            if (testTargets.mode === 'none') {
+                console.log('✨ No changes detected - all tests are up to date!');
+                process.exit(0);
+            } else if (testTargets.mode === 'incremental') {
+                console.log(`   Testing ${testTargets.files.length} affected files`);
+                console.log(`   Suites: ${testTargets.suites.join(', ') || 'all'}`);
+                
+                // 特定のスイートのみ実行
+                if (testTargets.suites.length > 0) {
+                    options.suites = testTargets.suites;
+                }
+            }
         }
 
         // テストスイートを選択
@@ -263,9 +362,28 @@ async function runTests() {
 
         // テストを実行
         const results = await framework.run();
+        
+        // インクリメンタルテストの結果を記録
+        if (options.changed || options.sinceLastRun) {
+            framework.incrementalTester.recordTestRun(results);
+        }
 
         // 終了コードを設定
-        process.exit(results.summary.failed > 0 ? 1 : 0);
+        let exitCode = 0;
+        
+        if (options.failOnError && results.summary.failed > 0) {
+            exitCode = 1;
+        }
+        
+        if (options.failOnWarning && results.warnings && results.warnings.length > 0) {
+            exitCode = 1;
+        }
+        
+        if (!options.failOnError && results.summary.failed > 0) {
+            exitCode = 1;
+        }
+        
+        process.exit(exitCode);
 
     } catch (error) {
         console.error(`\n❌ Test execution failed: ${error.message}`);
