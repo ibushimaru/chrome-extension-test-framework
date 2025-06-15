@@ -111,6 +111,28 @@ class ChromeExtensionTestFramework {
             console.log(`   ${profile.description}`);
         }
         
+        // プロファイルの詳細設定を表示
+        if (this.config.verbose || profile.name === 'development' || profile.name === 'production') {
+            console.log('   Profile settings:');
+            if (profile.skipTests && profile.skipTests.length > 0) {
+                console.log(`   - Skipping tests: ${profile.skipTests.length} tests`);
+            }
+            if (profile.additionalTests && profile.additionalTests.length > 0) {
+                console.log(`   - Additional tests: ${profile.additionalTests.join(', ')}`);
+            }
+            if (profile.warningLevels) {
+                const errorLevel = Object.values(profile.warningLevels).filter(v => v === 'error').length;
+                const warnLevel = Object.values(profile.warningLevels).filter(v => v === 'warn').length;
+                const ignoreLevel = Object.values(profile.warningLevels).filter(v => v === 'ignore' || v === 'info').length;
+                console.log(`   - Warning levels: ${errorLevel} errors, ${warnLevel} warnings, ${ignoreLevel} ignored`);
+            }
+            console.log(`   - Fail on warning: ${profile.failOnWarning || false}`);
+            console.log(`   - Fail on error: ${profile.failOnError || false}`);
+            if (profile.maxFileSize) {
+                console.log(`   - Max file size: ${(profile.maxFileSize / 1000000).toFixed(1)}MB`);
+            }
+        }
+        
         return this;
     }
 

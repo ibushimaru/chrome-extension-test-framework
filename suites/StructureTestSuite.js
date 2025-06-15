@@ -117,8 +117,17 @@ class StructureTestSuite extends TestSuite {
 
         // 開発用ファイルの除外確認
         this.test('No development files', async (config) => {
-            const allFiles = await this.getAllFiles();
-            const devFiles = [
+            // プロファイルでスキップが設定されている場合
+            if (config.profile?.skipTests?.includes('No development files')) {
+                // スキップの場合は何もしない（テストは実行されない）
+                return;
+            }
+            
+            // 開発ファイルチェックでは除外を無視してすべてのファイルを取得
+            const allFiles = await this.getAllFiles('', [], { skipExclude: true });
+            
+            // デフォルトの開発ファイルリスト
+            const defaultDevFiles = [
                 '.git', '.gitignore', '.gitattributes',
                 'node_modules', 'package.json', 'package-lock.json',
                 'yarn.lock', 'pnpm-lock.yaml',
@@ -128,8 +137,14 @@ class StructureTestSuite extends TestSuite {
                 '.eslintrc', '.prettierrc',
                 'Makefile', 'Dockerfile',
                 '.DS_Store', 'Thumbs.db',
-                '*.log', '*.map', '*.test.js', '*.spec.js'
+                '*.log', '*.map', '*.test.js', '*.spec.js',
+                'TODO.txt', 'TODO.md', 'NOTES.txt', 'NOTES.md',
+                '.vscode', '.idea', '*.swp', '*.tmp'
             ];
+            
+            // 設定から除外するファイルを取得
+            const allowedDevFiles = config.allowedDevFiles || [];
+            const devFiles = defaultDevFiles.filter(file => !allowedDevFiles.includes(file));
             
             const foundDevFiles = [];
             
@@ -137,14 +152,35 @@ class StructureTestSuite extends TestSuite {
                 const basename = path.basename(file);
                 const dirname = path.dirname(file);
                 
-                // 完全一致
-                if (devFiles.includes(basename)) {
-                    foundDevFiles.push(file);
+                // 許可リストのチェック（glob パターン対応）
+                let isAllowed = false;
+                for (const allowed of allowedDevFiles) {
+                    if (allowed === basename) {
+                        isAllowed = true;
+                        break;
+                    }
+                    // glob パターンのチェック
+                    if (allowed.includes('*') || allowed.includes('?') || allowed.includes('[')) {
+                        if (this.simpleGlobMatch(allowed, file) || this.simpleGlobMatch(allowed, basename)) {
+                            isAllowed = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (isAllowed) {
                     continue;
                 }
                 
-                // パターンマッチ
+                // 開発ファイルのチェック
                 for (const pattern of devFiles) {
+                    // 完全一致
+                    if (pattern === basename) {
+                        foundDevFiles.push(file);
+                        break;
+                    }
+                    
+                    // パターンマッチ
                     if (pattern.startsWith('*')) {
                         const ext = pattern.substring(1);
                         if (basename.endsWith(ext)) {
@@ -152,15 +188,23 @@ class StructureTestSuite extends TestSuite {
                             break;
                         }
                     }
-                }
-                
-                // node_modulesディレクトリ
-                if (dirname.includes('node_modules')) {
-                    foundDevFiles.push(file);
+                    
+                    // ディレクトリ名チェック
+                    if (!pattern.includes('*') && !pattern.includes('.') && dirname.includes(pattern)) {
+                        foundDevFiles.push(file);
+                        break;
+                    }
                 }
             }
             
             if (foundDevFiles.length > 0) {
+                // package.jsonが見つかった場合の特別なメッセージ
+                if (foundDevFiles.includes('package.json')) {
+                    console.warn('   ⚠️  package.json found in extension');
+                    console.log('   💡 If this is intentional (e.g., for npm modules), add to config:');
+                    console.log('      allowedDevFiles: ["package.json"]');
+                }
+                
                 throw new Error(`Development files found: ${foundDevFiles.join(', ')}`);
             }
         });
@@ -367,8 +411,8 @@ class StructureTestSuite extends TestSuite {
         // console.log使用の検証
         this.test('Console logging usage', async (config) => {
             // プロファイル設定でスキップする場合
-            if (config.skipTests && config.skipTests.includes('No console.log usage')) {
-                console.log('   ⏭️  Skipped (profile setting)');
+            if (config.profile?.skipTests?.includes('No console.log usage')) {
+                // スキップの場合は何もしない（テストは実行されない）
                 return;
             }
             

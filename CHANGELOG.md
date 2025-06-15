@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2025-06-16
+
+### Fixed
+- **Development file detection bug**: Fixed issue where development files were filtered out by ExcludeManager before validation
+  - Now uses `skipExclude` option to get all files for development file check
+  - Added more default development files (TODO.txt, TODO.md, NOTES.txt, NOTES.md, .vscode, .idea, *.swp, *.tmp)
+- **Console.log threshold logic**: Fixed profile skipTests check to use correct path (config.profile.skipTests)
+- **GitHub Actions error**: Fixed compatibility issues
+
+### Added
+- **Config file validation**: New ConfigValidator class validates configuration files
+  - Type checking for all config fields
+  - Conflict detection between settings
+  - Helpful error messages and warnings
+- **Enhanced --show-config**: Now shows effective configuration after profile application
+  - Shows which settings come from defaults, config file, profile, or CLI
+  - Displays profile-specific settings clearly
+- **Glob pattern support for allowedDevFiles**: Can now use patterns like `test/**/*.spec.js`
+  - Simple glob matching implementation in TestSuite base class
+  - Supports *, ?, and [] patterns
+
+### Changed
+- Improved error messages when config validation fails
+- Better documentation of configuration precedence
+
+## [1.10.0] - 2025-06-16
+
+### Added
+- **Automatic config file detection**: Automatically finds and loads config files (.cextrc.json, cext-test.config.js, etc.)
+- **Enhanced profile display**: Shows detailed profile settings when using --profile option
+  - Shows number of skipped tests
+  - Shows warning level configuration
+  - Shows fail-on-warning/error settings
+  - Shows max file size limits
+- **Flexible development file detection**: New `allowedDevFiles` config option
+  - Allows specifying development files that should be allowed in the extension
+  - Helpful for extensions that intentionally include package.json or other dev files
+  - Shows helpful hints when package.json is detected
+
+### Changed
+- Config file is now automatically detected without requiring --config flag
+- Profile differences are now more clearly visible during test execution
+- Development file detection provides better guidance for intentional inclusions
+
+### Fixed
+- Config file loading now properly shows which file was found
+- Profile settings are now clearly displayed to show the differences between profiles
+
 ## [1.9.0] - 2025-06-15
 
 ### Added
@@ -313,7 +361,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.10.1...HEAD
+[1.10.1]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.10.0...v1.10.1
+[1.10.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.6.0...v1.7.0

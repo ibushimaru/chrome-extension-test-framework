@@ -306,8 +306,20 @@ async function runTests() {
         });
 
         // 設定ファイルを読み込み
+        let defaultConfigPath = null;
         if (options.config) {
             await framework.loadConfig(options.config);
+            defaultConfigPath = options.config;
+        } else {
+            // 設定ファイルの自動検出
+            const ConfigLoader = require('../lib/ConfigLoader');
+            const configLoader = new ConfigLoader();
+            defaultConfigPath = configLoader.findDefaultConfig();
+            
+            if (defaultConfigPath) {
+                console.log(`📄 Found config file: ${path.basename(defaultConfigPath)}`);
+                await framework.loadConfig(defaultConfigPath);
+            }
         }
         
         // プロファイルが指定されている場合（設定ファイル後に適用）
@@ -318,15 +330,61 @@ async function runTests() {
         // --show-configオプションの処理
         if (options.showConfig) {
             console.log('📄 Current Configuration:');
-            console.log(JSON.stringify(framework.config, null, 2));
+            
+            // 基本設定
+            const effectiveConfig = {
+                extensionPath: framework.config.extensionPath,
+                output: framework.config.output,
+                validation: framework.config.validation,
+                parallel: framework.config.parallel,
+                timeout: framework.config.timeout,
+                exclude: framework.config.exclude || [],
+                include: framework.config.include || [],
+                failOnWarning: framework.config.failOnWarning,
+                failOnError: framework.config.failOnError
+            };
+            
+            // プロファイル情報
+            if (framework.config.profile) {
+                effectiveConfig.profile = {
+                    name: framework.config.profile.name,
+                    description: framework.config.profile.description,
+                    skipTests: framework.config.profile.skipTests || [],
+                    warningLevels: framework.config.profile.warningLevels || {},
+                    maxFileSize: framework.config.profile.maxFileSize
+                };
+            }
+            
+            // カスタム設定
+            if (framework.config.consoleThresholds) {
+                effectiveConfig.consoleThresholds = framework.config.consoleThresholds;
+            }
+            if (framework.config.allowedDevFiles) {
+                effectiveConfig.allowedDevFiles = framework.config.allowedDevFiles;
+            }
+            
+            console.log(JSON.stringify(effectiveConfig, null, 2));
             
             if (framework.config.profile) {
                 console.log('\n📝 Active Profile:', framework.config.profile.name);
                 console.log('   Description:', framework.config.profile.description);
+                if (framework.config.profile.skipTests && framework.config.profile.skipTests.length > 0) {
+                    console.log('   Skipped tests:', framework.config.profile.skipTests.join(', '));
+                }
             }
             
             console.log('\n🔍 Exclude Patterns:');
-            console.log(framework.excludeManager.getPatterns());
+            console.log(JSON.stringify(framework.excludeManager.getPatterns(), null, 2));
+            
+            console.log('\n📊 Settings Source:');
+            console.log('   - Default values: Built-in framework defaults');
+            if (defaultConfigPath) {
+                console.log(`   - Config file: ${path.basename(defaultConfigPath)}`);
+            }
+            if (options.profile) {
+                console.log(`   - Profile: ${options.profile}`);
+            }
+            console.log('   - CLI arguments: Override all above');
             
             process.exit(0);
         }

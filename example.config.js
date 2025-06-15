@@ -116,6 +116,13 @@ module.exports = {
         test: Infinity      // テストファイルでは無制限
     },
     
+    // 開発ファイルとして検出から除外するファイル (v1.10.0+)
+    // Chrome拡張機能で意図的に含める開発ファイルを指定
+    allowedDevFiles: [
+        // 'package.json',  // npmモジュールを使用する場合
+        // '.gitignore',    // ソース管理が必要な場合
+    ],
+    
     // カスタムバリデーター
     validators: {
         // 例: バージョン番号の形式チェック
