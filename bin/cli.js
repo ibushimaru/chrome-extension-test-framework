@@ -25,7 +25,9 @@ const options = {
     extensionPath: process.cwd(),
     suites: ['all'],
     parallel: false,
-    watch: false
+    watch: false,
+    fix: false,
+    fixDryRun: false
 };
 
 // 引数を解析
@@ -85,6 +87,15 @@ for (let i = 0; i < args.length; i++) {
             options.verbose = true;
             break;
             
+        case '--fix':
+            options.fix = true;
+            break;
+            
+        case '--fix-dry-run':
+            options.fixDryRun = true;
+            options.fix = true;
+            break;
+            
         default:
             if (!arg.startsWith('-')) {
                 options.extensionPath = path.resolve(arg);
@@ -111,6 +122,8 @@ Options:
   -w, --watch             Watch mode - re-run tests on file changes
   --no-progress           Disable progress display
   --verbose               Show detailed progress information
+  --fix                   Automatically fix common issues
+  --fix-dry-run           Show what would be fixed without making changes
 
 Test Suites:
   manifest      - Validate manifest.json
@@ -126,6 +139,8 @@ Examples:
   cext-test -o json,html              # Generate JSON and HTML reports
   cext-test -s manifest,security      # Run specific test suites
   cext-test -c my-config.json         # Use custom config file
+  cext-test --fix                     # Automatically fix issues
+  cext-test --fix-dry-run             # Preview fixes without applying them
 
 Configuration:
   Create a cext-test.config.js or .cextrc.json file for custom settings:
@@ -161,9 +176,50 @@ if (!fs.existsSync(options.extensionPath)) {
     process.exit(1);
 }
 
+// Auto-fix モード
+if (options.fix) {
+    const AutoFixer = require('../lib/AutoFixer');
+    const fixer = new AutoFixer({
+        dryRun: options.fixDryRun,
+        verbose: options.verbose
+    });
+
+    (async () => {
+        try {
+            const result = await fixer.fixAll(options.extensionPath);
+            
+            console.log('\n📊 Auto-fix Summary:');
+            console.log(`   Total fixes: ${result.summary.total}`);
+            
+            if (result.summary.total > 0) {
+                console.log('\n   By type:');
+                for (const [type, count] of Object.entries(result.summary.byType)) {
+                    console.log(`   - ${type}: ${count}`);
+                }
+            }
+            
+            if (options.fixDryRun) {
+                console.log('\n💡 Run with --fix (without --dry-run) to apply these fixes');
+            } else if (result.summary.total > 0) {
+                console.log('\n✅ Fixes applied successfully!');
+                console.log('💡 Run tests again to verify the fixes');
+            } else {
+                console.log('\n✨ No issues found that can be auto-fixed');
+            }
+            
+            process.exit(0);
+        } catch (error) {
+            console.error(`\n❌ Auto-fix failed: ${error.message}`);
+            process.exit(1);
+        }
+    })();
+    return;
+}
+
 const manifestPath = path.join(options.extensionPath, 'manifest.json');
 if (!fs.existsSync(manifestPath)) {
     console.error(`❌ manifest.json not found in: ${options.extensionPath}`);
+    console.log('\n💡 Tip: Run with --fix to create a default manifest.json');
     process.exit(1);
 }
 

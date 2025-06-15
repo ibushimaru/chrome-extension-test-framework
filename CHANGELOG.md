@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2025-06-15
+
+### Added
+- Automatic fix functionality with `--fix` and `--fix-dry-run` flags
+- AutoFixer class for programmatic fixing
+- Manifest.json auto-fixes:
+  - Manifest V2 to V3 migration
+  - Invalid version format correction
+  - Required field addition
+  - Name/description length truncation
+  - CSP format conversion and unsafe-eval/unsafe-inline removal
+  - browser_action to action conversion
+- File name auto-fixes:
+  - Space to underscore conversion
+  - Special character removal
+  - Uppercase to lowercase conversion (except README, LICENSE, CHANGELOG)
+- Dry-run mode for previewing fixes
+- Verbose output for detailed fix information
+- Comprehensive auto-fix test suite
+- Broken extension sample for testing
+
+### Changed
+- CLI now supports --fix and --fix-dry-run options
+- Enhanced help documentation
+
+## [1.2.0] - 2025-06-15
+
+### Added
+- Enhanced error messages with detailed information
+- Custom error classes (BaseError, ValidationError, SecurityError, StructureError, PerformanceError)
+- Error codes system for consistent error identification
+- Rich error metadata including:
+  - Severity levels (low, medium, high, critical)
+  - Contextual details
+  - Fix suggestions
+  - Code examples
+  - Documentation links
+- ERROR_CODES.md comprehensive reference
+- Error formatting in all reporters
+- Test script for enhanced errors demonstration
+
+### Changed
+- All test suites now use custom error classes
+- TestRunner propagates error metadata
+- Reporters display formatted error messages
+- Progress reporter shows error details during execution
+
+### Fixed
+- CI workflow to exclude Node 14.x from macOS tests (arm64 incompatibility)
+
 ## [1.1.0] - 2025-06-15
 
 ### Added
@@ -80,7 +130,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ibushimaru/chrome-extension-test-framework/releases/tag/v1.0.0
