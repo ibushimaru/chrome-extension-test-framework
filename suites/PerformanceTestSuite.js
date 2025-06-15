@@ -3,6 +3,7 @@
  */
 
 const TestSuite = require('../lib/TestSuite');
+const { PerformanceError, StructureError } = require('../lib/errors');
 const fs = require('fs');
 const path = require('path');
 
@@ -37,7 +38,7 @@ class PerformanceTestSuite extends TestSuite {
             const totalSizeMB = totalSize / 1024 / 1024;
             
             if (totalSizeMB > 10) {
-                throw new Error(`Extension size too large: ${totalSizeMB.toFixed(2)}MB (recommended: < 10MB)`);
+                throw PerformanceError.extensionTooLarge(totalSize, 10 * 1024 * 1024);
             }
         });
 
@@ -80,12 +81,25 @@ class PerformanceTestSuite extends TestSuite {
                 // console.logの過剰使用
                 const consoleLogs = (content.match(/console\.(log|debug|info)/g) || []).length;
                 if (consoleLogs > 10) {
-                    console.warn(`   ⚠️  Excessive console logging in ${path.basename(jsFile)}: ${consoleLogs} occurrences`);
+                    const error = PerformanceError.excessiveLogging(
+                        path.relative(config.extensionPath, jsFile),
+                        consoleLogs
+                    );
+                    console.warn(error.getFormattedMessage());
                 }
                 
                 // デバッグコードの検出
                 if (/debugger;/g.test(content)) {
-                    throw new Error(`debugger statement found in ${path.basename(jsFile)}`);
+                    throw new PerformanceError(
+                        'debugger statement found in production code',
+                        {
+                            code: 'DEBUGGER_STATEMENT',
+                            file: path.relative(config.extensionPath, jsFile),
+                            severity: 'critical',
+                            suggestion: 'Remove all debugger statements before releasing your extension',
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/service_workers/#debugging'
+                        }
+                    );
                 }
             }
         });
@@ -110,7 +124,7 @@ class PerformanceTestSuite extends TestSuite {
                 // node_modulesが含まれていないことを確認
                 const nodeModulesPath = path.join(config.extensionPath, 'node_modules');
                 if (fs.existsSync(nodeModulesPath)) {
-                    throw new Error('node_modules directory should not be included in extension');
+                    throw StructureError.developmentFile('node_modules', 'dependency');
                 }
             }
         });
@@ -154,14 +168,24 @@ class PerformanceTestSuite extends TestSuite {
                 const removeListeners = (content.match(/removeEventListener/g) || []).length;
                 
                 if (addListeners > removeListeners + 5) {
-                    console.warn(`   ⚠️  Potential memory leak in ${path.basename(jsFile)}: more listeners added than removed`);
+                    const error = PerformanceError.memoryLeak(
+                        path.relative(config.extensionPath, jsFile),
+                        'event_listeners',
+                        { added: addListeners, removed: removeListeners }
+                    );
+                    console.warn(error.getFormattedMessage());
                 }
                 
                 // setIntervalの使用
                 if (/setInterval/g.test(content)) {
                     const clearIntervals = (content.match(/clearInterval/g) || []).length;
                     if (clearIntervals === 0) {
-                        console.warn(`   ⚠️  setInterval without clearInterval in ${path.basename(jsFile)}`);
+                        const error = PerformanceError.memoryLeak(
+                            path.relative(config.extensionPath, jsFile),
+                            'intervals',
+                            { setInterval: true, clearInterval: false }
+                        );
+                        console.warn(error.getFormattedMessage());
                     }
                 }
                 
@@ -191,7 +215,11 @@ class PerformanceTestSuite extends TestSuite {
                     // 過度なストレージアクセス
                     const storageAccess = (content.match(/chrome\.storage\.(local|sync)\.(get|set)/g) || []).length;
                     if (storageAccess > 20) {
-                        console.warn(`   ⚠️  Frequent storage access in service worker: ${storageAccess} calls`);
+                        const error = PerformanceError.inefficientStorage(
+                            'chrome.storage API calls',
+                            storageAccess
+                        );
+                        console.warn(error.getFormattedMessage());
                     }
                 }
             }

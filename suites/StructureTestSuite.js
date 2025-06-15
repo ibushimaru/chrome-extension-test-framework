@@ -3,6 +3,7 @@
  */
 
 const TestSuite = require('../lib/TestSuite');
+const { StructureError } = require('../lib/errors');
 const fs = require('fs');
 const path = require('path');
 
@@ -58,12 +59,20 @@ class StructureTestSuite extends TestSuite {
                 
                 // スペースを含むファイル名
                 if (basename.includes(' ')) {
-                    issues.push(`Space in filename: ${file}`);
+                    issues.push({
+                        file,
+                        issue: 'spaces',
+                        message: `Space in filename: ${file}`
+                    });
                 }
                 
                 // 特殊文字を含むファイル名
                 if (/[^a-zA-Z0-9._-]/.test(basename)) {
-                    issues.push(`Special characters in filename: ${file}`);
+                    issues.push({
+                        file,
+                        issue: 'special',
+                        message: `Special characters in filename: ${file}`
+                    });
                 }
                 
                 // 大文字で始まるファイル（画像とREADMEを除く）
@@ -76,7 +85,9 @@ class StructureTestSuite extends TestSuite {
             }
             
             if (issues.length > 0) {
-                issues.forEach(issue => console.warn(`   ⚠️  ${issue}`));
+                // Throw error for the first issue with detailed information
+                const firstIssue = issues[0];
+                throw StructureError.invalidNaming(firstIssue.file, firstIssue.issue);
             }
         });
 
@@ -126,7 +137,8 @@ class StructureTestSuite extends TestSuite {
             }
             
             if (foundDevFiles.length > 0) {
-                throw new Error(`Development files found: ${foundDevFiles.join(', ')}`);
+                // Throw error for the first development file found
+                throw StructureError.developmentFile(foundDevFiles[0]);
             }
         });
 
@@ -142,7 +154,17 @@ class StructureTestSuite extends TestSuite {
             }
             
             if (missingFiles.length > 0) {
-                throw new Error(`Missing required files: ${missingFiles.join(', ')}`);
+                // Throw error for the first missing file
+                throw new StructureError({
+                    code: StructureError.CODES.MISSING_REQUIRED_FILE,
+                    message: `Required file not found: ${missingFiles[0]}`,
+                    path: missingFiles[0],
+                    missingItems: missingFiles,
+                    severity: 'critical',
+                    suggestion: `Create the required file: ${missingFiles[0]}`,
+                    example: 'This is a required file for Chrome extensions',
+                    documentation: 'https://developer.chrome.com/docs/extensions/mv3/getstarted/'
+                });
             }
             
             // 推奨ファイル

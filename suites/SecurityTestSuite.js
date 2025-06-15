@@ -3,6 +3,7 @@
  */
 
 const TestSuite = require('../lib/TestSuite');
+const { SecurityError, ValidationError } = require('../lib/errors');
 const fs = require('fs');
 const path = require('path');
 
@@ -28,7 +29,15 @@ class SecurityTestSuite extends TestSuite {
                 
                 // unsafe-evalの使用チェック
                 if (cspString.includes('unsafe-eval')) {
-                    throw new Error('CSP contains unsafe-eval directive');
+                    throw new SecurityError(
+                        'Content Security Policy contains unsafe-eval directive',
+                        {
+                            code: 'UNSAFE_CSP_EVAL',
+                            severity: 'critical',
+                            suggestion: 'Remove unsafe-eval from CSP. Use JSON.parse() instead of eval() for data parsing',
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/manifest/content_security_policy/'
+                        }
+                    );
                 }
                 
                 // unsafe-inlineの使用チェック
@@ -38,7 +47,15 @@ class SecurityTestSuite extends TestSuite {
                 
                 // httpsの強制
                 if (cspString.includes('http:') && !cspString.includes('http://localhost')) {
-                    throw new Error('CSP should enforce HTTPS for external resources');
+                    throw new SecurityError(
+                        'Content Security Policy allows insecure HTTP resources',
+                        {
+                            code: 'INSECURE_CSP_HTTP',
+                            severity: 'high',
+                            suggestion: 'Use HTTPS for all external resources. Only allow http://localhost for development',
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/security/#https'
+                        }
+                    );
                 }
             }
         });
@@ -55,7 +72,10 @@ class SecurityTestSuite extends TestSuite {
                 const matches = content.match(externalScriptRegex);
                 
                 if (matches) {
-                    throw new Error(`External scripts found in ${path.basename(htmlFile)}`);
+                    throw SecurityError.externalScript(
+                        path.relative(config.extensionPath, htmlFile),
+                        matches[0]
+                    );
                 }
             }
         });
@@ -79,8 +99,26 @@ class SecurityTestSuite extends TestSuite {
                 
                 // onclickなどのインラインイベントハンドラ
                 const inlineHandlerRegex = /\son\w+\s*=/gi;
-                if (inlineHandlerRegex.test(content)) {
-                    throw new Error(`Inline event handlers found in ${path.basename(htmlFile)}`);
+                const handlerMatch = content.match(inlineHandlerRegex);
+                if (handlerMatch) {
+                    throw new SecurityError(
+                        `Inline event handlers (${handlerMatch[0]}) violate Chrome Extension CSP`,
+                        {
+                            code: 'INLINE_EVENT_HANDLER',
+                            file: path.relative(config.extensionPath, htmlFile),
+                            severity: 'critical',
+                            suggestion: 'Use addEventListener() in a separate JavaScript file instead of inline handlers',
+                            example: `// Instead of:
+<button onclick="doSomething()">Click</button>
+
+// Use:
+<button id="myButton">Click</button>
+
+// In your JS file:
+document.getElementById('myButton').addEventListener('click', doSomething);`,
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/security/#inline_script'
+                        }
+                    );
                 }
             }
         });
@@ -94,14 +132,41 @@ class SecurityTestSuite extends TestSuite {
                 
                 // eval()の使用チェック
                 const evalRegex = /\beval\s*\(/g;
-                if (evalRegex.test(content)) {
-                    throw new Error(`eval() usage found in ${path.basename(jsFile)}`);
+                const evalMatch = content.match(evalRegex);
+                if (evalMatch) {
+                    // Find line number
+                    const lines = content.substring(0, evalMatch.index).split('\n');
+                    const line = lines.length;
+                    throw SecurityError.unsafeEval(
+                        path.relative(config.extensionPath, jsFile),
+                        line
+                    );
                 }
                 
                 // Function()コンストラクタの使用チェック
                 const functionRegex = /new\s+Function\s*\(/g;
-                if (functionRegex.test(content)) {
-                    throw new Error(`Function() constructor found in ${path.basename(jsFile)}`);
+                const functionMatch = content.match(functionRegex);
+                if (functionMatch) {
+                    const lines = content.substring(0, functionMatch.index).split('\n');
+                    const line = lines.length;
+                    throw new SecurityError(
+                        'Function() constructor is equivalent to eval() and violates CSP',
+                        {
+                            code: 'UNSAFE_FUNCTION_CONSTRUCTOR',
+                            file: path.relative(config.extensionPath, jsFile),
+                            line,
+                            severity: 'critical',
+                            suggestion: 'Use regular function declarations or arrow functions instead',
+                            example: `// Instead of:
+const fn = new Function('x', 'return x * 2');
+
+// Use:
+const fn = (x) => x * 2;
+// Or:
+function fn(x) { return x * 2; }`,
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/security/#eval'
+                        }
+                    );
                 }
             }
         });
@@ -115,8 +180,15 @@ class SecurityTestSuite extends TestSuite {
                 
                 // innerHTMLの使用を検出
                 const innerHTMLRegex = /\.innerHTML\s*=/g;
-                if (innerHTMLRegex.test(content)) {
-                    console.warn(`   ⚠️  innerHTML usage found in ${path.basename(jsFile)} - ensure proper sanitization`);
+                const innerHTMLMatch = content.match(innerHTMLRegex);
+                if (innerHTMLMatch) {
+                    const lines = content.substring(0, innerHTMLMatch.index).split('\n');
+                    const line = lines.length;
+                    const error = SecurityError.unsafeInnerHTML(
+                        path.relative(config.extensionPath, jsFile),
+                        line
+                    );
+                    console.warn(error.getFormattedMessage());
                 }
                 
                 // outerHTMLの使用を検出
@@ -139,7 +211,10 @@ class SecurityTestSuite extends TestSuite {
                 const matches = content.match(httpRegex);
                 
                 if (matches) {
-                    throw new Error(`Insecure HTTP URLs found in ${path.basename(file)}`);
+                    throw SecurityError.httpResource(
+                        path.relative(config.extensionPath, file),
+                        matches[0]
+                    );
                 }
             }
         });
@@ -192,8 +267,9 @@ class SecurityTestSuite extends TestSuite {
                 const content = fs.readFileSync(jsFile, 'utf8');
                 
                 // localStorage使用の警告（chrome.storage推奨）
-                if (/localStorage\./g.test(content)) {
-                    console.warn(`   ⚠️  localStorage usage in ${path.basename(jsFile)} - consider using chrome.storage API`);
+                const localStorageMatch = content.match(/localStorage\./g);
+                if (localStorageMatch) {
+                    console.warn(`   ⚠️  localStorage usage in ${path.basename(jsFile)} - consider using chrome.storage API for better security and sync capabilities`);
                 }
                 
                 // 機密情報の可能性があるキーワード
@@ -206,8 +282,16 @@ class SecurityTestSuite extends TestSuite {
                 ];
                 
                 sensitiveKeywords.forEach(keyword => {
-                    if (keyword.test(content)) {
-                        console.warn(`   ⚠️  Potential sensitive data handling in ${path.basename(jsFile)}`);
+                    const match = content.match(keyword);
+                    if (match) {
+                        const lines = content.substring(0, match.index).split('\n');
+                        const line = lines.length;
+                        const error = SecurityError.insecureStorage(
+                            path.relative(config.extensionPath, jsFile),
+                            line,
+                            match[0]
+                        );
+                        console.warn(error.getFormattedMessage());
                     }
                 });
             }
@@ -221,8 +305,25 @@ class SecurityTestSuite extends TestSuite {
                 const content = fs.readFileSync(jsFile, 'utf8');
                 
                 // documentWriteの使用
-                if (/document\.write/g.test(content)) {
-                    throw new Error(`document.write usage found in ${path.basename(jsFile)}`);
+                const docWriteMatch = content.match(/document\.write/g);
+                if (docWriteMatch) {
+                    throw new SecurityError(
+                        'document.write() can introduce XSS vulnerabilities and is blocked by CSP',
+                        {
+                            code: 'UNSAFE_DOCUMENT_WRITE',
+                            file: path.relative(config.extensionPath, jsFile),
+                            severity: 'critical',
+                            suggestion: 'Use DOM methods like createElement() and appendChild() instead',
+                            example: `// Instead of:
+document.write('<div>Content</div>');
+
+// Use:
+const div = document.createElement('div');
+div.textContent = 'Content';
+document.body.appendChild(div);`,
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/security/#dom-based-xss'
+                        }
+                    );
                 }
                 
                 // insertAdjacentHTMLの使用

@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-test-framework",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Universal testing framework for Chrome extensions - Fast static analysis without browser dependencies",
   "main": "index.js",
   "bin": {
@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node test/framework.test.js",
+    "test:errors": "node test-enhanced-errors.js",
     "prepublishOnly": "npm test",
     "postinstall": "node -e \"const fs = require('fs'); const path = './bin/cli.js'; if (fs.existsSync(path)) { fs.chmodSync(path, '755'); console.log('✅ Fixed CLI permissions'); }\""
   },
@@ -43,6 +44,7 @@
     "suites/",
     "bin/",
     "scripts/",
+    "docs/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",

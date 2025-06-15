@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-06-15
+
+### Added
+- Enhanced error messages with detailed information
+- Custom error classes: ValidationError, SecurityError, StructureError, PerformanceError
+- Error codes system for consistent error identification
+- Detailed error output including:
+  - Error code and severity level
+  - Contextual information (file paths, line numbers)
+  - Actionable suggestions for fixing errors
+  - Code examples showing correct implementation
+  - Direct links to relevant documentation
+- ERROR_CODES.md reference guide
+- test:errors npm script for testing enhanced errors
+
+### Changed
+- Updated ManifestTestSuite to use new error classes
+- Enhanced TestRunner to handle custom errors
+- Improved ProgressReporter to display formatted error messages
+- Updated Reporter to include enhanced error details in all output formats
+
+### Improved
+- Error messages now provide clear guidance on how to fix issues
+- Better developer experience with actionable error information
+- Consistent error formatting across all output types
+
+### Added
+- Enhanced error messages with detailed context and helpful information
+- Custom error classes for different error types:
+  - ValidationError for manifest and configuration issues
+  - SecurityError for security vulnerabilities
+  - StructureError for file organization problems
+  - PerformanceError for optimization issues
+- Error codes for easy reference and documentation
+- Specific suggestions for fixing each error
+- Code examples showing correct implementations
+- Direct links to relevant Chrome Extensions documentation
+- File paths and line numbers in error messages
+- ERROR_CODES.md documentation with comprehensive error reference
+- Test script to demonstrate enhanced error messages (test:errors)
+
+### Changed
+- Updated all test suites to use new error classes
+- Enhanced TestRunner to handle custom error types
+- Improved ProgressReporter to display formatted error messages
+- Updated Reporter to show enhanced error details in all output formats
+- Added error message formatting with proper indentation and styling
+
+### Developer Experience
+- Errors now provide actionable guidance instead of just stating problems
+- Each error includes a "Did you mean?" style suggestion
+- Examples show the exact code needed to fix issues
+- Documentation links point to specific relevant sections
+- Error severity levels help prioritize fixes
+
 ## [1.1.0] - 2025-06-15
 
 ### Added
@@ -80,7 +135,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ibushimaru/chrome-extension-test-framework/releases/tag/v1.0.0
