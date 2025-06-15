@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2025-06-15
+
+### Added
+- **SecurityAnalyzer**: Advanced security vulnerability detection
+  - Detects hardcoded API keys, secrets, tokens, and passwords
+  - Identifies insecure storage patterns (localStorage, chrome.storage with sensitive data)
+  - Finds dangerous JavaScript patterns (eval, Function constructor, setTimeout with strings)
+  - Detects XSS vulnerabilities (innerHTML, outerHTML with user input)
+  - Identifies insecure communication patterns (HTTP URLs, unvalidated postMessage)
+  - Provides detailed reports with line numbers and severity levels
+- **Enhanced Security Tests**: Three new security validation tests
+  - Advanced security analysis with comprehensive vulnerability scanning
+  - Hardcoded secrets detection with multiple pattern matching
+  - Secure data storage validation
+- **Security Test Scenarios**: Real-world security vulnerability examples
+  - xss-vulnerable: XSS attack vectors demonstration
+  - eval-usage: Dangerous JavaScript patterns
+  - insecure-storage: Insecure data storage practices
+  - unsafe-permissions: Overly broad permissions
+
+### Changed
+- SecurityTestSuite now performs deeper security analysis
+- Improved detection patterns for various security vulnerabilities
+- Enhanced error reporting with more specific security issue details
+
+### Fixed
+- Security validation now properly detects chrome.storage misuse
+- Improved API key and secret detection patterns
+
 ## [1.6.0] - 2025-06-15
 
 ### Added
@@ -221,7 +250,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.3.0...v1.4.0

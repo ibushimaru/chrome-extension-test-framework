@@ -1,0 +1,54 @@
+{
+  "errors": [
+    {
+      "type": "EXCESSIVE_PERMISSIONS",
+      "severity": "high",
+      "message": "Extension requests dangerous permissions without clear justification",
+      "permissions": ["debugger", "management", "proxy", "webRequest", "browsingData", "cookies", "history", "bookmarks"]
+    },
+    {
+      "type": "ALL_URLS_PERMISSION",
+      "severity": "high",
+      "message": "Extension requests access to all URLs",
+      "file": "manifest.json"
+    },
+    {
+      "type": "OVERLY_BROAD_HOST_PERMISSIONS",
+      "severity": "high",
+      "message": "Host permissions include all protocols and domains",
+      "file": "manifest.json"
+    },
+    {
+      "type": "UNSAFE_WEB_ACCESSIBLE_RESOURCES",
+      "severity": "critical",
+      "message": "All resources are web accessible to all origins",
+      "file": "manifest.json"
+    },
+    {
+      "type": "OVERLY_BROAD_EXTERNALLY_CONNECTABLE",
+      "severity": "high",
+      "message": "Extension accepts connections from all websites",
+      "file": "manifest.json"
+    }
+  ],
+  "warnings": [
+    {
+      "type": "UNUSED_PERMISSIONS",
+      "severity": "medium",
+      "message": "Many permissions are declared but never used in code",
+      "permissions": ["alarms", "bookmarks", "browsingData", "clipboardRead", "clipboardWrite", "cookies", "debugger", "declarativeNetRequest", "downloads", "history", "identity", "management", "nativeMessaging", "notifications", "pageCapture", "privacy", "proxy", "tabs", "topSites", "webNavigation", "webRequest"]
+    },
+    {
+      "type": "CONTENT_SCRIPT_ALL_FRAMES",
+      "severity": "medium",
+      "message": "Content script runs in all frames unnecessarily",
+      "file": "manifest.json"
+    },
+    {
+      "type": "CONTENT_SCRIPT_DOCUMENT_START",
+      "severity": "low",
+      "message": "Content script runs at document_start without clear need",
+      "file": "manifest.json"
+    }
+  ]
+}

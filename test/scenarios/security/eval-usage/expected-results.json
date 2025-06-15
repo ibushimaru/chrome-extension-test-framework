@@ -1,0 +1,68 @@
+{
+  "errors": [
+    {
+      "type": "EVAL_USAGE",
+      "severity": "critical",
+      "message": "Direct eval() usage detected",
+      "files": ["background.js", "popup.js", "content.js"],
+      "count": 15
+    },
+    {
+      "type": "FUNCTION_CONSTRUCTOR",
+      "severity": "critical",
+      "message": "Function constructor usage detected (equivalent to eval)",
+      "files": ["background.js", "popup.js", "content.js"],
+      "count": 8
+    },
+    {
+      "type": "UNSAFE_CSP_EVAL",
+      "severity": "high",
+      "message": "Content Security Policy allows 'unsafe-eval'",
+      "file": "manifest.json"
+    },
+    {
+      "type": "STRING_TO_CODE",
+      "severity": "high",
+      "message": "setTimeout/setInterval called with string arguments",
+      "file": "popup.js"
+    },
+    {
+      "type": "DYNAMIC_CODE_EXECUTION",
+      "severity": "critical",
+      "message": "Dynamic code execution from user input",
+      "files": ["background.js", "popup.js", "content.js"]
+    },
+    {
+      "type": "CODE_INJECTION",
+      "severity": "critical",
+      "message": "Code injection into page context",
+      "file": "content.js"
+    }
+  ],
+  "warnings": [
+    {
+      "type": "STORED_CODE_EXECUTION",
+      "severity": "high",
+      "message": "Executing code stored in chrome.storage",
+      "files": ["background.js", "popup.js"]
+    },
+    {
+      "type": "POSTMESSAGE_CODE_EXECUTION",
+      "severity": "high",
+      "message": "Executing code received via postMessage",
+      "file": "content.js"
+    },
+    {
+      "type": "WITH_STATEMENT",
+      "severity": "medium",
+      "message": "Using 'with' statement in dynamic code",
+      "file": "popup.js"
+    },
+    {
+      "type": "UNSAFE_JSON_PARSING",
+      "severity": "high",
+      "message": "Using eval to parse JSON instead of JSON.parse",
+      "file": "popup.js"
+    }
+  ]
+}
