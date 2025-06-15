@@ -1,0 +1,33 @@
+{
+    "description": "巨大なファイルサイズを持つ拡張機能",
+    "expectedWarnings": [
+        {
+            "type": "large-file-size",
+            "message": "background.js exceeds recommended file size",
+            "severity": "high"
+        },
+        {
+            "type": "bundle-optimization",
+            "message": "Consider splitting large bundles into smaller chunks",
+            "severity": "medium"
+        },
+        {
+            "type": "performance-impact",
+            "message": "Large files may impact extension loading time",
+            "severity": "high"
+        }
+    ],
+    "expectedErrors": [],
+    "frameworkImprovements": [
+        "ファイルサイズの詳細な分析機能",
+        "バンドルサイズの最適化提案",
+        "チャンク分割の推奨",
+        "Chrome Web Store のサイズ制限との比較"
+    ],
+    "suggestedFixes": [
+        "コード分割（Code Splitting）の実装",
+        "不要なコードの削除",
+        "遅延読み込み（Lazy Loading）の活用",
+        "圧縮・最小化の改善"
+    ]
+}

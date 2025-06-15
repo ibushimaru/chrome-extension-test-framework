@@ -1,0 +1,67 @@
+{
+  "expected": {
+    "shouldFail": true,
+    "failingTests": [
+      "Memory leak prevention",
+      "Loading time optimization",
+      "Animation performance"
+    ],
+    "issues": [
+      {
+        "type": "excessive_dom_elements",
+        "severity": "critical",
+        "file": "content.js",
+        "patterns": [
+          "Creating 10,000+ elements at once",
+          "Deep DOM nesting (1000 levels)",
+          "Inefficient innerHTML usage in loops",
+          "Hidden elements consuming memory",
+          "Complex DOM for simple data",
+          "Continuously growing DOM without cleanup",
+          "Excessive Shadow DOM usage"
+        ]
+      },
+      {
+        "type": "popup_performance",
+        "severity": "high",
+        "file": "popup.js",
+        "patterns": [
+          "Rendering 5000 items without virtualization",
+          "All tab content pre-rendered",
+          "Nested accordions fully expanded in memory",
+          "Frequent full DOM recreation"
+        ]
+      },
+      {
+        "type": "css_performance",
+        "severity": "medium",
+        "file": "styles.css",
+        "patterns": [
+          "Universal selector usage",
+          "Complex nested selectors",
+          "Expensive animations on layout properties",
+          "Heavy use of filters and shadows",
+          "Viewport units causing recalculations"
+        ]
+      }
+    ],
+    "domMetrics": {
+      "totalElements": ">30,000",
+      "maxDepth": ">1000",
+      "shadowRoots": "1000",
+      "eventListeners": ">15,000"
+    },
+    "suggestions": [
+      "Implement virtual scrolling for large lists",
+      "Use lazy loading for tab content",
+      "Paginate or chunk large data sets",
+      "Remove elements when not visible",
+      "Use DocumentFragment for batch insertions",
+      "Debounce/throttle DOM updates",
+      "Optimize CSS selectors",
+      "Use CSS containment for performance",
+      "Implement intersection observer for visibility",
+      "Clean up event listeners properly"
+    ]
+  }
+}

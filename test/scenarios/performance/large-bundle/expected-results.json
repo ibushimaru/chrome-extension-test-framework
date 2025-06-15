@@ -1,0 +1,67 @@
+{
+  "expected": {
+    "shouldFail": true,
+    "failingTests": [
+      "File size limits",
+      "JavaScript optimization",
+      "CSS optimization",
+      "Dependencies check",
+      "Loading time optimization"
+    ],
+    "issues": [
+      {
+        "type": "bundle_size",
+        "severity": "critical",
+        "file": "background-bundle.js",
+        "patterns": [
+          "Large constants bundled in code",
+          "Bundled libraries with unused functions",
+          "Duplicate implementations",
+          "Dead code not removed",
+          "Large data structures in code"
+        ]
+      },
+      {
+        "type": "vendor_bloat",
+        "severity": "high",
+        "files": ["vendor/library1.js", "vendor/library2.js", "vendor/library3.js"],
+        "patterns": [
+          "Entire libraries included for single function use",
+          "Multiple libraries with overlapping functionality",
+          "No tree shaking applied",
+          "Simulated large library sizes"
+        ]
+      },
+      {
+        "type": "css_bloat",
+        "severity": "high",
+        "files": ["assets/styles.css", "assets/theme.css", "assets/animations.css"],
+        "patterns": [
+          "Hundreds of unused CSS classes",
+          "Excessive CSS variables",
+          "Complex animations never used",
+          "Duplicate style definitions"
+        ]
+      },
+      {
+        "type": "duplicate_code",
+        "severity": "medium",
+        "patterns": [
+          "Multiple implementations of same functionality",
+          "Helpers that duplicate library methods",
+          "Polyfills for supported features"
+        ]
+      }
+    ],
+    "suggestions": [
+      "Use tree shaking to remove unused code",
+      "Implement code splitting for on-demand loading",
+      "Use dynamic imports for large libraries",
+      "Remove unused CSS with PurgeCSS",
+      "Minify and compress all assets",
+      "Use CDN for common libraries",
+      "Lazy load non-critical resources",
+      "Extract large data to separate JSON files"
+    ]
+  }
+}

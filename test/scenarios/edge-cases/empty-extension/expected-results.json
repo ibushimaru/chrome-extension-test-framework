@@ -1,0 +1,31 @@
+{
+    "description": "最小限のmanifest.jsonのみを持つ空の拡張機能",
+    "expectedWarnings": [
+        {
+            "type": "missing-description",
+            "message": "No description field in manifest.json",
+            "severity": "low"
+        },
+        {
+            "type": "no-functionality",
+            "message": "Extension has no background scripts, content scripts, or popup",
+            "severity": "medium"
+        },
+        {
+            "type": "no-icons",
+            "message": "No icons defined in manifest.json",
+            "severity": "low"
+        }
+    ],
+    "expectedErrors": [],
+    "frameworkImprovements": [
+        "空の拡張機能を検出して警告を出す機能",
+        "最小限の機能要件のチェック",
+        "意図的に空の拡張機能かどうかの判定"
+    ],
+    "suggestedFixes": [
+        "description フィールドを追加",
+        "アイコンを追加",
+        "基本的な機能（popup、background script等）を実装"
+    ]
+}

@@ -1,0 +1,73 @@
+{
+  "errors": [
+    {
+      "type": "HARDCODED_SECRETS",
+      "severity": "critical",
+      "message": "API keys and secrets hardcoded in source code",
+      "files": ["background.js", "popup.js", "content.js"],
+      "secrets": ["API_KEY", "SECRET_TOKEN", "DATABASE_PASSWORD", "CLIENT_SECRET", "ENCRYPTION_KEY", "SERVICE_API_KEY", "WEBHOOK_SECRET"]
+    },
+    {
+      "type": "PLAINTEXT_PASSWORD_STORAGE",
+      "severity": "critical",
+      "message": "Passwords stored in plain text without encryption",
+      "locations": ["chrome.storage", "localStorage", "sessionStorage"]
+    },
+    {
+      "type": "SENSITIVE_DATA_IN_LOCALSTORAGE",
+      "severity": "high",
+      "message": "Sensitive data stored in localStorage which persists after extension removal",
+      "files": ["popup.js", "content.js"]
+    },
+    {
+      "type": "CONTENT_SCRIPT_LOCALSTORAGE",
+      "severity": "critical",
+      "message": "Content script uses web page's localStorage, exposing data to page",
+      "file": "content.js"
+    },
+    {
+      "type": "SENSITIVE_DATA_IN_DOM",
+      "severity": "high",
+      "message": "Sensitive data exposed in DOM attributes and injected scripts",
+      "file": "content.js"
+    },
+    {
+      "type": "SENSITIVE_DATA_LOGGING",
+      "severity": "high",
+      "message": "Sensitive data logged to console",
+      "file": "popup.js"
+    },
+    {
+      "type": "UNENCRYPTED_SYNC_STORAGE",
+      "severity": "critical",
+      "message": "Sensitive data stored in chrome.storage.sync without encryption",
+      "file": "background.js"
+    },
+    {
+      "type": "EXTERNAL_MESSAGE_EXPOSURE",
+      "severity": "high",
+      "message": "Sensitive data exposed through external message API",
+      "file": "background.js"
+    }
+  ],
+  "warnings": [
+    {
+      "type": "CREDIT_CARD_STORAGE",
+      "severity": "critical",
+      "message": "Credit card information stored insecurely",
+      "files": ["background.js", "popup.js"]
+    },
+    {
+      "type": "NO_DATA_VALIDATION",
+      "severity": "medium",
+      "message": "No validation of sensitive data before storage",
+      "files": ["popup.js", "content.js"]
+    },
+    {
+      "type": "BROAD_POSTMESSAGE",
+      "severity": "medium",
+      "message": "postMessage used with '*' origin, exposing data to any site",
+      "file": "content.js"
+    }
+  ]
+}

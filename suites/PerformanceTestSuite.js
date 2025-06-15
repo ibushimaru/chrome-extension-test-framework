@@ -5,6 +5,8 @@
 const TestSuite = require('../lib/TestSuite');
 const fs = require('fs');
 const path = require('path');
+const FileSizeAnalyzer = require('../lib/FileSizeAnalyzer');
+const PerformanceAnalyzer = require('../lib/PerformanceAnalyzer');
 
 class PerformanceTestSuite extends TestSuite {
     constructor(config) {
@@ -18,26 +20,64 @@ class PerformanceTestSuite extends TestSuite {
     }
 
     setupTests() {
-        // ファイルサイズの検証
+        // ファイルサイズの検証（改善版）
         this.test('File size limits', async (config) => {
-            const results = await this.analyzeFileSizes(config.extensionPath);
+            const analyzer = new FileSizeAnalyzer();
+            const analysis = await analyzer.analyze(config.extensionPath);
+            const report = analyzer.generateReport();
             
-            // 大きすぎるファイルの警告
-            const largeFiles = results.filter(file => file.size > 1024 * 1024); // 1MB以上
-            
-            if (largeFiles.length > 0) {
+            // 大きなファイルの警告表示
+            if (analysis.largeFiles.length > 0) {
                 console.warn('   ⚠️  Large files detected:');
-                largeFiles.forEach(file => {
-                    console.warn(`      - ${file.path}: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+                analysis.largeFiles.forEach(file => {
+                    const severity = file.severity === 'critical' ? '🚨' : 
+                                   file.severity === 'error' ? '❌' : '⚠️';
+                    console.warn(`      ${severity} ${file.path}: ${analyzer.formatSize(file.size)}`);
                 });
             }
             
-            // 拡張機能の総サイズ
-            const totalSize = results.reduce((sum, file) => sum + file.size, 0);
-            const totalSizeMB = totalSize / 1024 / 1024;
+            // ファイルタイプ別の分析表示
+            if (config.verbose) {
+                console.log('   📊 File size breakdown:');
+                for (const [type, data] of Object.entries(report.byType)) {
+                    if (data.count > 0) {
+                        console.log(`      - ${type}: ${data.count} files, ${data.totalSize} (${data.percentage})`);
+                    }
+                }
+            }
             
-            if (totalSizeMB > 10) {
-                throw new Error(`Extension size too large: ${totalSizeMB.toFixed(2)}MB (recommended: < 10MB)`);
+            // 提案事項の表示
+            analysis.suggestions.forEach(suggestion => {
+                console.log(`   💡 ${suggestion.message}`);
+                console.log(`      → ${suggestion.suggestion}`);
+            });
+            
+            // クリティカルなエラーがあれば例外を投げる
+            const criticalErrors = analysis.warnings.filter(w => w.severity === 'critical');
+            if (criticalErrors.length > 0) {
+                const error = new Error(`Critical file size issues detected: ${criticalErrors.length} files exceed limits`);
+                error.code = 'FILE_SIZE_CRITICAL';
+                error.severity = 'critical';
+                error.details = {
+                    files: criticalErrors,
+                    report: report
+                };
+                error.suggestions = analysis.suggestions;
+                throw error;
+            }
+            
+            // エラーレベルの警告がある場合
+            const errors = analysis.warnings.filter(w => w.severity === 'error');
+            if (errors.length > 0) {
+                const error = new Error(`File size issues detected: ${errors.length} files are too large`);
+                error.code = 'FILE_SIZE_ERROR';
+                error.severity = 'high';
+                error.details = {
+                    files: errors,
+                    report: report
+                };
+                error.suggestions = analysis.suggestions;
+                throw error;
             }
         });
 
@@ -64,18 +104,21 @@ class PerformanceTestSuite extends TestSuite {
             }
         });
 
-        // JavaScript最適化の検証
+        // JavaScript最適化の検証（PerformanceAnalyzer統合）
         this.test('JavaScript optimization', async (config) => {
+            const analyzer = new PerformanceAnalyzer();
+            const issues = await analyzer.analyze(config.extensionPath);
+            
+            // Heavy computation関連の問題を抽出
+            const computationIssues = issues.filter(issue => issue.type === 'heavy_computation');
+            const bundleIssues = issues.filter(issue => issue.type === 'large_bundle' || issue.type === 'duplicate_code');
+            
+            // JavaScript特有の問題をチェック
             const jsFiles = await this.findFilesByExtension(config.extensionPath, ['.js']);
             
             for (const jsFile of jsFiles) {
                 const content = fs.readFileSync(jsFile, 'utf8');
                 const stats = fs.statSync(jsFile);
-                
-                // 非常に大きなJSファイル
-                if (stats.size > 500 * 1024) { // 500KB
-                    console.warn(`   ⚠️  Large JS file: ${path.basename(jsFile)} (${(stats.size / 1024).toFixed(0)}KB)`);
-                }
                 
                 // console.logの過剰使用
                 const consoleLogs = (content.match(/console\.(log|debug|info)/g) || []).length;
@@ -87,6 +130,36 @@ class PerformanceTestSuite extends TestSuite {
                 if (/debugger;/g.test(content)) {
                     throw new Error(`debugger statement found in ${path.basename(jsFile)}`);
                 }
+            }
+            
+            // Heavy computation問題の表示
+            if (computationIssues.length > 0) {
+                console.warn('   ⚠️  Heavy computation patterns detected:');
+                computationIssues.forEach(issue => {
+                    const severity = issue.severity === 'critical' ? '🚨' : '❌';
+                    console.warn(`      ${severity} ${issue.file}: ${issue.description}`);
+                    if (issue.suggestion) {
+                        console.warn(`         💡 ${issue.suggestion}`);
+                    }
+                });
+            }
+            
+            // Bundle issues
+            if (bundleIssues.length > 0) {
+                console.warn('   ⚠️  Bundle optimization issues:');
+                bundleIssues.forEach(issue => {
+                    console.warn(`      ⚠️  ${issue.file}: ${issue.description}`);
+                });
+            }
+            
+            // Critical issues
+            const criticalIssues = [...computationIssues, ...bundleIssues].filter(i => i.severity === 'critical');
+            if (criticalIssues.length > 0) {
+                const error = new Error(`${criticalIssues.length} critical JavaScript optimization issues detected`);
+                error.code = 'JS_OPTIMIZATION_CRITICAL';
+                error.severity = 'critical';
+                error.details = criticalIssues;
+                throw error;
             }
         });
 
@@ -142,37 +215,39 @@ class PerformanceTestSuite extends TestSuite {
             }
         });
 
-        // メモリリークの潜在的リスク
+        // メモリリークの潜在的リスク（PerformanceAnalyzer統合）
         this.test('Memory leak prevention', async (config) => {
-            const jsFiles = await this.findFilesByExtension(config.extensionPath, ['.js']);
+            const analyzer = new PerformanceAnalyzer();
+            const issues = await analyzer.analyze(config.extensionPath);
+            const report = analyzer.generateReport();
             
-            for (const jsFile of jsFiles) {
-                const content = fs.readFileSync(jsFile, 'utf8');
-                
-                // イベントリスナーの削除忘れ
-                const addListeners = (content.match(/addEventListener/g) || []).length;
-                const removeListeners = (content.match(/removeEventListener/g) || []).length;
-                
-                if (addListeners > removeListeners + 5) {
-                    console.warn(`   ⚠️  Potential memory leak in ${path.basename(jsFile)}: more listeners added than removed`);
-                }
-                
-                // setIntervalの使用
-                if (/setInterval/g.test(content)) {
-                    const clearIntervals = (content.match(/clearInterval/g) || []).length;
-                    if (clearIntervals === 0) {
-                        console.warn(`   ⚠️  setInterval without clearInterval in ${path.basename(jsFile)}`);
+            // メモリリーク関連の問題を抽出
+            const memoryLeakIssues = issues.filter(issue => issue.type === 'memory_leak');
+            
+            if (memoryLeakIssues.length > 0) {
+                console.warn('   ⚠️  Memory leak patterns detected:');
+                memoryLeakIssues.forEach(issue => {
+                    const severity = issue.severity === 'critical' ? '🚨' : 
+                                   issue.severity === 'high' ? '❌' : '⚠️';
+                    console.warn(`      ${severity} ${issue.file}: ${issue.description}`);
+                    if (issue.occurrences) {
+                        console.warn(`         Found ${issue.occurrences} occurrences`);
                     }
-                }
+                });
                 
-                // 循環参照の可能性
-                if (/this\.\w+\s*=\s*this/g.test(content)) {
-                    console.warn(`   ⚠️  Potential circular reference in ${path.basename(jsFile)}`);
+                // 高セベリティの問題があればエラー
+                const highSeverityIssues = memoryLeakIssues.filter(i => i.severity === 'high' || i.severity === 'critical');
+                if (highSeverityIssues.length > 0) {
+                    const error = new Error(`${highSeverityIssues.length} high-severity memory leak patterns detected`);
+                    error.code = 'MEMORY_LEAK_DETECTED';
+                    error.severity = 'high';
+                    error.details = highSeverityIssues;
+                    throw error;
                 }
             }
         });
 
-        // Service Worker効率性
+        // Service Worker効率性（PerformanceAnalyzer統合）
         this.test('Service worker efficiency', async (config) => {
             const manifestPath = path.join(config.extensionPath, 'manifest.json');
             const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -182,6 +257,21 @@ class PerformanceTestSuite extends TestSuite {
                 
                 if (fs.existsSync(swPath)) {
                     const content = fs.readFileSync(swPath, 'utf8');
+                    const analyzer = new PerformanceAnalyzer();
+                    
+                    // Service worker specific analysis
+                    analyzer.detectMemoryLeaks(content, path.basename(swPath));
+                    analyzer.detectHeavyComputation(content, path.basename(swPath));
+                    
+                    // Get any issues found
+                    const swIssues = analyzer.issues.filter(i => i.file === path.basename(swPath));
+                    
+                    if (swIssues.length > 0) {
+                        console.warn('   ⚠️  Service worker performance issues:');
+                        swIssues.forEach(issue => {
+                            console.warn(`      ❌ ${issue.description}`);
+                        });
+                    }
                     
                     // 永続的な接続の使用
                     if (/chrome\.runtime\.connect/g.test(content)) {
@@ -193,14 +283,35 @@ class PerformanceTestSuite extends TestSuite {
                     if (storageAccess > 20) {
                         console.warn(`   ⚠️  Frequent storage access in service worker: ${storageAccess} calls`);
                     }
+                    
+                    // Critical issues in service worker
+                    const criticalSWIssues = swIssues.filter(i => i.severity === 'critical' || i.severity === 'high');
+                    if (criticalSWIssues.length > 0) {
+                        throw new Error(`Service worker has ${criticalSWIssues.length} critical performance issues`);
+                    }
                 }
             }
         });
 
-        // ローディング時間の最適化
+        // ローディング時間の最適化（PerformanceAnalyzer統合）
         this.test('Loading time optimization', async (config) => {
             const manifestPath = path.join(config.extensionPath, 'manifest.json');
             const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const analyzer = new PerformanceAnalyzer();
+            const issues = await analyzer.analyze(config.extensionPath);
+            
+            // Bundle size issues
+            const bundleSizeIssues = issues.filter(i => i.type === 'bundle_size' || i.type === 'large_file');
+            
+            if (bundleSizeIssues.length > 0) {
+                console.warn('   ⚠️  Bundle size issues affecting load time:');
+                bundleSizeIssues.forEach(issue => {
+                    console.warn(`      ❌ ${issue.description}`);
+                    if (issue.suggestion) {
+                        console.warn(`         💡 ${issue.suggestion}`);
+                    }
+                });
+            }
             
             // Content scriptsの読み込みタイミング
             if (manifest.content_scripts) {
@@ -209,6 +320,19 @@ class PerformanceTestSuite extends TestSuite {
                         // document_idleはデフォルトで良い選択
                     } else if (script.run_at === 'document_start') {
                         console.warn(`   ⚠️  Content script ${index} runs at document_start - may impact page load`);
+                    }
+                    
+                    // Check if content scripts are too large
+                    if (script.js) {
+                        script.js.forEach(jsFile => {
+                            const filePath = path.join(config.extensionPath, jsFile);
+                            if (fs.existsSync(filePath)) {
+                                const stats = fs.statSync(filePath);
+                                if (stats.size > 100 * 1024) {
+                                    console.warn(`   ⚠️  Large content script: ${jsFile} (${(stats.size / 1024).toFixed(0)}KB)`);
+                                }
+                            }
+                        });
                     }
                 });
             }
@@ -224,10 +348,35 @@ class PerformanceTestSuite extends TestSuite {
                     console.warn(`   ⚠️  Many web accessible resources: ${totalResources}`);
                 }
             }
+            
+            // Check for critical bundle size issues
+            const criticalBundleIssues = bundleSizeIssues.filter(i => i.severity === 'critical' || i.severity === 'high');
+            if (criticalBundleIssues.length > 0) {
+                throw new Error(`${criticalBundleIssues.length} critical loading time issues detected`);
+            }
         });
 
-        // アニメーションパフォーマンス
+        // アニメーションパフォーマンス（PerformanceAnalyzer統合）
         this.test('Animation performance', async (config) => {
+            const analyzer = new PerformanceAnalyzer();
+            const issues = await analyzer.analyze(config.extensionPath);
+            
+            // DOM and CSS performance issues
+            const domIssues = issues.filter(i => i.type === 'excessive_dom');
+            const cssIssues = issues.filter(i => i.type === 'css_performance');
+            
+            // Display DOM manipulation issues
+            if (domIssues.length > 0) {
+                console.warn('   ⚠️  DOM performance issues detected:');
+                domIssues.forEach(issue => {
+                    console.warn(`      ❌ ${issue.file}: ${issue.description}`);
+                    if (issue.suggestion) {
+                        console.warn(`         💡 ${issue.suggestion}`);
+                    }
+                });
+            }
+            
+            // CSS performance check
             const cssFiles = await this.findFilesByExtension(config.extensionPath, ['.css']);
             
             for (const cssFile of cssFiles) {
@@ -245,6 +394,20 @@ class PerformanceTestSuite extends TestSuite {
                 if (nonTransformAnimations.length > 0) {
                     console.warn(`   ⚠️  Non-transform animations detected in ${path.basename(cssFile)} - may cause reflow`);
                 }
+            }
+            
+            // Display CSS issues from analyzer
+            if (cssIssues.length > 0) {
+                console.warn('   ⚠️  CSS performance issues:');
+                cssIssues.forEach(issue => {
+                    console.warn(`      ⚠️  ${issue.file}: ${issue.description}`);
+                });
+            }
+            
+            // Check for critical animation/DOM issues
+            const criticalAnimationIssues = [...domIssues, ...cssIssues].filter(i => i.severity === 'high' || i.severity === 'critical');
+            if (criticalAnimationIssues.length > 0) {
+                throw new Error(`${criticalAnimationIssues.length} critical animation/rendering performance issues detected`);
             }
         });
     }

@@ -1,0 +1,39 @@
+{
+    "description": "特殊文字を含むファイル名を持つ拡張機能",
+    "expectedWarnings": [
+        {
+            "type": "special-characters",
+            "message": "File 'content@script.js' contains special character '@'",
+            "severity": "high"
+        },
+        {
+            "type": "spaces-in-filename",
+            "message": "File 'file with spaces.js' contains spaces",
+            "severity": "high"
+        },
+        {
+            "type": "cross-platform-compatibility",
+            "message": "Special characters in filenames may cause issues on different platforms",
+            "severity": "high"
+        }
+    ],
+    "expectedErrors": [
+        {
+            "type": "invalid-file-reference",
+            "message": "File 'content@script.js' may not load correctly",
+            "severity": "critical"
+        }
+    ],
+    "frameworkImprovements": [
+        "ファイル名の妥当性チェック強化",
+        "プラットフォーム別の互換性チェック",
+        "URLエンコーディングの必要性検出",
+        "自動修正機能の改善"
+    ],
+    "suggestedFixes": [
+        "特殊文字を削除またはアンダースコアに置換",
+        "スペースをアンダースコアまたはハイフンに置換",
+        "ファイル名の正規化",
+        "manifest.json内の参照も同時に更新"
+    ]
+}

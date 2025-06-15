@@ -25,7 +25,17 @@ const options = {
     extensionPath: process.cwd(),
     suites: ['all'],
     parallel: false,
-    watch: false
+    watch: false,
+    fix: false,
+    fixDryRun: false,
+    exclude: [],
+    include: [],
+    profile: null,
+    failOnWarning: false,
+    failOnError: false,
+    changed: false,
+    sinceLastRun: false,
+    clearCache: false
 };
 
 // 引数を解析
@@ -85,6 +95,47 @@ for (let i = 0; i < args.length; i++) {
             options.verbose = true;
             break;
             
+        case '--fix':
+            options.fix = true;
+            break;
+            
+        case '--fix-dry-run':
+            options.fixDryRun = true;
+            options.fix = true;
+            break;
+            
+        case '--exclude':
+            options.exclude = args[++i].split(',');
+            break;
+            
+        case '--include':
+            options.include = args[++i].split(',');
+            break;
+            
+        case '--profile':
+            options.profile = args[++i];
+            break;
+            
+        case '--fail-on-warning':
+            options.failOnWarning = true;
+            break;
+            
+        case '--fail-on-error':
+            options.failOnError = true;
+            break;
+            
+        case '--changed':
+            options.changed = true;
+            break;
+            
+        case '--since-last-run':
+            options.sinceLastRun = true;
+            break;
+            
+        case '--clear-cache':
+            options.clearCache = true;
+            break;
+            
         default:
             if (!arg.startsWith('-')) {
                 options.extensionPath = path.resolve(arg);
@@ -111,6 +162,16 @@ Options:
   -w, --watch             Watch mode - re-run tests on file changes
   --no-progress           Disable progress display
   --verbose               Show detailed progress information
+  --fix                   Automatically fix common issues
+  --fix-dry-run           Show what would be fixed without making changes
+  --exclude <patterns>    Exclude files/directories (comma-separated glob patterns)
+  --include <patterns>    Include only specific files/directories
+  --profile <name>        Use a predefined profile (development, production, ci, quick)
+  --fail-on-warning       Exit with error code if warnings are found
+  --fail-on-error         Exit with error code if errors are found
+  --changed               Test only changed files (requires git)
+  --since-last-run        Test only files changed since last run
+  --clear-cache           Clear the test cache
 
 Test Suites:
   manifest      - Validate manifest.json
@@ -126,6 +187,13 @@ Examples:
   cext-test -o json,html              # Generate JSON and HTML reports
   cext-test -s manifest,security      # Run specific test suites
   cext-test -c my-config.json         # Use custom config file
+  cext-test --fix                     # Automatically fix issues
+  cext-test --fix-dry-run             # Preview fixes without applying them
+  cext-test --exclude "test/**,docs/**" # Exclude test and docs directories
+  cext-test --include "js/**,css/**"    # Test only js and css files
+  cext-test --profile production        # Use production profile
+  cext-test --changed                   # Test only changed files (git)
+  cext-test --since-last-run            # Test files changed since last run
 
 Configuration:
   Create a cext-test.config.js or .cextrc.json file for custom settings:
@@ -161,9 +229,50 @@ if (!fs.existsSync(options.extensionPath)) {
     process.exit(1);
 }
 
+// Auto-fix モード
+if (options.fix) {
+    const AutoFixer = require('../lib/AutoFixer');
+    const fixer = new AutoFixer({
+        dryRun: options.fixDryRun,
+        verbose: options.verbose
+    });
+
+    (async () => {
+        try {
+            const result = await fixer.fixAll(options.extensionPath);
+            
+            console.log('\n📊 Auto-fix Summary:');
+            console.log(`   Total fixes: ${result.summary.total}`);
+            
+            if (result.summary.total > 0) {
+                console.log('\n   By type:');
+                for (const [type, count] of Object.entries(result.summary.byType)) {
+                    console.log(`   - ${type}: ${count}`);
+                }
+            }
+            
+            if (options.fixDryRun) {
+                console.log('\n💡 Run with --fix (without --dry-run) to apply these fixes');
+            } else if (result.summary.total > 0) {
+                console.log('\n✅ Fixes applied successfully!');
+                console.log('💡 Run tests again to verify the fixes');
+            } else {
+                console.log('\n✨ No issues found that can be auto-fixed');
+            }
+            
+            process.exit(0);
+        } catch (error) {
+            console.error(`\n❌ Auto-fix failed: ${error.message}`);
+            process.exit(1);
+        }
+    })();
+    return;
+}
+
 const manifestPath = path.join(options.extensionPath, 'manifest.json');
 if (!fs.existsSync(manifestPath)) {
     console.error(`❌ manifest.json not found in: ${options.extensionPath}`);
+    console.log('\n💡 Tip: Run with --fix to create a default manifest.json');
     process.exit(1);
 }
 
@@ -174,12 +283,58 @@ async function runTests() {
         const framework = new ChromeExtensionTestFramework({
             extensionPath: options.extensionPath,
             output: options.output,
-            parallel: options.parallel
+            parallel: options.parallel,
+            exclude: options.exclude,
+            include: options.include,
+            failOnWarning: options.failOnWarning,
+            failOnError: options.failOnError,
+            profile: options.profile,
+            progress: options.progress,
+            verbose: options.verbose
         });
 
         // 設定ファイルを読み込み
         if (options.config) {
             await framework.loadConfig(options.config);
+        }
+        
+        // プロファイルが指定されている場合（設定ファイル後に適用）
+        if (options.profile && !framework.config.profile) {
+            framework.applyProfile(options.profile);
+        }
+        
+        // キャッシュクリアオプション
+        if (options.clearCache) {
+            console.log('🗑️  Clearing test cache...');
+            framework.incrementalTester.clearCache();
+            console.log('✅ Cache cleared');
+            if (!options.changed && !options.sinceLastRun) {
+                return;
+            }
+        }
+        
+        // インクリメンタルテストの判定
+        if (options.changed || options.sinceLastRun) {
+            const testTargets = await framework.incrementalTester.determineTestTargets({
+                all: false,
+                useGit: options.changed,
+                sinceLastRun: options.sinceLastRun
+            });
+            
+            console.log(`\n🔍 Incremental test mode: ${testTargets.reason}`);
+            
+            if (testTargets.mode === 'none') {
+                console.log('✨ No changes detected - all tests are up to date!');
+                process.exit(0);
+            } else if (testTargets.mode === 'incremental') {
+                console.log(`   Testing ${testTargets.files.length} affected files`);
+                console.log(`   Suites: ${testTargets.suites.join(', ') || 'all'}`);
+                
+                // 特定のスイートのみ実行
+                if (testTargets.suites.length > 0) {
+                    options.suites = testTargets.suites;
+                }
+            }
         }
 
         // テストスイートを選択
@@ -207,9 +362,28 @@ async function runTests() {
 
         // テストを実行
         const results = await framework.run();
+        
+        // インクリメンタルテストの結果を記録
+        if (options.changed || options.sinceLastRun) {
+            framework.incrementalTester.recordTestRun(results);
+        }
 
         // 終了コードを設定
-        process.exit(results.summary.failed > 0 ? 1 : 0);
+        let exitCode = 0;
+        
+        if (options.failOnError && results.summary.failed > 0) {
+            exitCode = 1;
+        }
+        
+        if (options.failOnWarning && results.warnings && results.warnings.length > 0) {
+            exitCode = 1;
+        }
+        
+        if (!options.failOnError && results.summary.failed > 0) {
+            exitCode = 1;
+        }
+        
+        process.exit(exitCode);
 
     } catch (error) {
         console.error(`\n❌ Test execution failed: ${error.message}`);
@@ -222,27 +396,81 @@ async function runTests() {
 
 // ウォッチモード
 if (options.watch) {
-    console.log(`👀 Watching for changes in: ${options.extensionPath}`);
+    const FileWatcher = require('../lib/FileWatcher');
     
     // 初回実行
-    runTests();
-    
-    // ファイル変更を監視
-    const watchDirs = [
-        options.extensionPath,
-        path.join(options.extensionPath, 'js'),
-        path.join(options.extensionPath, 'css'),
-        path.join(options.extensionPath, '_locales')
-    ].filter(dir => fs.existsSync(dir));
-    
-    watchDirs.forEach(dir => {
-        fs.watch(dir, { recursive: true }, (eventType, filename) => {
-            if (filename && !filename.includes('test-results')) {
-                console.log(`\n📝 File changed: ${filename}`);
-                console.log('Re-running tests...\n');
-                runTests();
+    console.log('🚀 Running initial tests...\n');
+    runTests().then(() => {
+        // ファイル監視を開始
+        const watcher = new FileWatcher({
+            extensionPath: options.extensionPath,
+            debounceTime: 500,
+            ignorePatterns: [
+                'node_modules',
+                '.git',
+                'test-results',
+                'test-output',
+                '.DS_Store',
+                'Thumbs.db',
+                '*.log',
+                '*.tmp'
+            ]
+        });
+
+        // テスト実行中フラグ
+        let isRunning = false;
+        
+        // 変更時の処理
+        watcher.on('change', async (changeInfo) => {
+            if (isRunning) {
+                console.log('   ⏳ Test already running, skipping...');
+                return;
+            }
+
+            isRunning = true;
+            console.log('\n🔄 Re-running tests...\n');
+            
+            try {
+                await runTests();
+            } catch (error) {
+                // エラーが発生してもウォッチモードは継続
+                console.error('Test execution error:', error.message);
+            } finally {
+                isRunning = false;
             }
         });
+
+        // 特定ファイルの変更に対する特別な処理
+        watcher.on('manifest-change', () => {
+            console.log('   ⚠️  manifest.json changed - full test suite will run');
+        });
+
+        // Ctrl+Cで終了
+        process.on('SIGINT', () => {
+            console.log('\n\n👋 Stopping watch mode...');
+            watcher.stop();
+            
+            // 統計を表示
+            const stats = watcher.getStats();
+            console.log('\n📊 Watch Mode Statistics:');
+            console.log(`   Total changes detected: ${stats.totalChanges}`);
+            console.log(`   Unique files changed: ${stats.changedFiles.size}`);
+            
+            if (Object.keys(stats.fileTypes).length > 0) {
+                console.log('\n   Changes by file type:');
+                Object.entries(stats.fileTypes).forEach(([type, count]) => {
+                    console.log(`   - ${type}: ${count}`);
+                });
+            }
+            
+            process.exit(0);
+        });
+
+        // ウォッチャーを開始
+        watcher.start();
+    }).catch(error => {
+        console.error('Initial test run failed:', error.message);
+        process.exit(1);
     });
 } else {
     // 通常実行

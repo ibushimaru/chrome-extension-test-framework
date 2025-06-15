@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "Huge Extension",
+    "version": "1.0.0",
+    "description": "Extension with extremely large files for testing",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "icons": {
+        "16": "icon-16.png",
+        "48": "icon-48.png",
+        "128": "icon-128.png",
+        "512": "icon-512.png"
+    }
+}

@@ -1,0 +1,52 @@
+{
+  "expected": {
+    "shouldFail": true,
+    "failingTests": [
+      "Memory leak prevention",
+      "Service worker efficiency"
+    ],
+    "issues": [
+      {
+        "type": "memory_leak",
+        "severity": "high",
+        "file": "background.js",
+        "patterns": [
+          "Growing array without bounds",
+          "Event listeners not removed",
+          "Timers not cleared",
+          "Global cache without cleanup",
+          "Recursive setTimeout with closures"
+        ]
+      },
+      {
+        "type": "memory_leak",
+        "severity": "high",
+        "file": "content.js",
+        "patterns": [
+          "DOM element references retained",
+          "Event listeners on removed elements",
+          "Detached DOM nodes",
+          "Circular references",
+          "Large data in closures"
+        ]
+      },
+      {
+        "type": "memory_leak",
+        "severity": "medium",
+        "file": "popup.js",
+        "patterns": [
+          "Accumulating click history",
+          "Uncleared intervals",
+          "Storage without limits"
+        ]
+      }
+    ],
+    "suggestions": [
+      "Implement data structure size limits",
+      "Remove event listeners when no longer needed",
+      "Clear timers and intervals properly",
+      "Use WeakMap/WeakSet for DOM references",
+      "Implement cleanup in unload handlers"
+    ]
+  }
+}

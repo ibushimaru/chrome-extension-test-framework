@@ -15,6 +15,8 @@
 - 🛠️ **拡張可能** - カスタムテストスイートとバリデーターの追加が可能
 - 🌍 **汎用性** - あらゆるChrome拡張機能に対応
 - 🔧 **CI/CD対応** - 終了コードによる自動化サポート
+- 💡 **詳細なエラーメッセージ** - エラーコード、修正提案、コード例、ドキュメントリンク付き (v1.2.0+)
+- 🔧 **自動修正機能** - 一般的な問題を自動的に修正 (v1.3.0+)
 
 ## インストール
 
@@ -77,6 +79,12 @@ cext-test -s manifest,security
 
 # カスタム出力形式
 cext-test -o json,html -d ./reports
+
+# 問題を自動修正
+cext-test --fix
+
+# 修正内容をプレビュー（実際には変更しない）
+cext-test --fix-dry-run
 ```
 
 ### プログラムとして使用
@@ -114,6 +122,61 @@ framework.addSuite({
 
 // テスト実行
 const results = await framework.run();
+```
+
+## 自動修正機能 (v1.3.0+)
+
+このフレームワークは、一般的な問題を自動的に修正する機能を提供します：
+
+### 修正可能な問題
+
+#### manifest.json
+- Manifest V2からV3への移行
+- 不正なバージョン形式の修正
+- 必須フィールドの追加
+- 長すぎる名前・説明の短縮
+- CSPの形式変換とunsafe-eval/unsafe-inlineの削除
+- browser_actionからactionへの変換
+
+#### ファイル名
+- スペースをアンダースコアに置換
+- 特殊文字の削除
+- 大文字を小文字に変換（README、LICENSE、CHANGELOGを除く）
+
+### 使用方法
+
+```bash
+# 修正内容をプレビュー
+cext-test --fix-dry-run
+
+# 実際に修正を適用
+cext-test --fix
+
+# 詳細な修正内容を表示
+cext-test --fix --verbose
+```
+
+### 修正例
+
+```bash
+$ cext-test samples/broken-extension --fix
+
+🔧 Running auto-fix on: samples/broken-extension
+
+📊 Auto-fix Summary:
+   Total fixes: 11
+
+   By type:
+   - UPDATE_FIELD: 1
+   - FIX_VERSION: 1
+   - TRUNCATE_FIELD: 2
+   - MIGRATE_V2_TO_V3: 2
+   - RENAME_FILE: 2
+   - MIGRATE_CSP: 1
+   - REMOVE_UNSAFE: 2
+
+✅ Fixes applied successfully!
+💡 Run tests again to verify the fixes
 ```
 
 ## ビルトインテストスイート

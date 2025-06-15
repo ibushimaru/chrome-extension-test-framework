@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Form</title>
+  <style>
+    body { width: 300px; padding: 20px; }
+    input { width: 100%; margin: 5px 0; padding: 5px; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>User Login</h2>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <input type="text" id="creditCard" placeholder="Credit Card Number">
+    <button type="submit">Save Credentials</button>
+  </form>
+  
+  <div id="savedData"></div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

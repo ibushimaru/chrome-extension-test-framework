@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Large Bundle Extension",
+  "version": "1.0.0",
+  "description": "Extension with unnecessarily large JavaScript bundles",
+  "permissions": ["storage", "tabs"],
+  "background": {
+    "service_worker": "background-bundle.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "vendor/library1.js",
+        "vendor/library2.js", 
+        "vendor/library3.js",
+        "utils/helpers.js",
+        "content-bundle.js"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["vendor/*", "assets/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

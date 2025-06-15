@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "My Broken Extension With A Very Long Name Tha",
+  "version": "1.0.0.1",
+  "description": "This is a test extension with various issues that need fixing. The description is also way too long and exceeds the 132 character li",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'  object-src 'self'"
+  },
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png"
+    }
+  }
+}

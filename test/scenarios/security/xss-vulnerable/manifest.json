@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "XSS Vulnerable Extension",
+  "version": "1.0.0",
+  "description": "Extension with XSS vulnerabilities for testing",
+  "permissions": ["storage", "activeTab"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"]
+  }],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'unsafe-inline' 'unsafe-eval'; object-src 'self'"
+  }
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>XSS Vulnerable Popup</title>
+  <style>
+    body { width: 300px; padding: 10px; }
+    .message { margin: 10px 0; padding: 5px; background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h2>User Messages</h2>
+  
+  <!-- Inline script - XSS vulnerability -->
+  <script>
+    function displayMessage() {
+      var userInput = document.getElementById('userInput').value;
+      // Dangerous: using innerHTML without sanitization
+      document.getElementById('output').innerHTML = userInput;
+    }
+  </script>
+  
+  <!-- Inline event handler - XSS vulnerability -->
+  <input type="text" id="userInput" placeholder="Enter message" onkeyup="displayMessage()">
+  
+  <div id="output"></div>
+  
+  <button onclick="alert('Inline handler executed!')">Click Me</button>
+  
+  <!-- Loading user content directly -->
+  <div id="userContent"></div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
