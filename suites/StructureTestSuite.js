@@ -198,14 +198,49 @@ class StructureTestSuite extends TestSuite {
             }
             
             if (foundDevFiles.length > 0) {
-                // package.jsonが見つかった場合の特別なメッセージ
-                if (foundDevFiles.includes('package.json')) {
-                    console.warn('   ⚠️  package.json found in extension');
-                    console.log('   💡 If this is intentional (e.g., for npm modules), add to config:');
-                    console.log('      allowedDevFiles: ["package.json"]');
+                // ディレクトリ別にファイルを集計
+                const filesByDir = {};
+                foundDevFiles.forEach(file => {
+                    const dir = path.dirname(file) || 'root';
+                    if (!filesByDir[dir]) {
+                        filesByDir[dir] = 0;
+                    }
+                    filesByDir[dir]++;
+                });
+                
+                // 多い順にソート
+                const sortedDirs = Object.entries(filesByDir)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5); // 上位5ディレクトリ
+                
+                console.log(`   📄 Development files found: ${foundDevFiles.length} files`);
+                if (sortedDirs.length > 0) {
+                    console.log('   Top directories:');
+                    sortedDirs.forEach(([dir, count]) => {
+                        console.log(`      • ${dir}: ${count} files`);
+                    });
+                    if (Object.keys(filesByDir).length > 5) {
+                        console.log(`      • ... and ${Object.keys(filesByDir).length - 5} more directories`);
+                    }
                 }
                 
-                throw new Error(`Development files found: ${foundDevFiles.join(', ')}`);
+                // package.jsonが見つかった場合の特別なメッセージ
+                if (foundDevFiles.some(f => path.basename(f) === 'package.json')) {
+                    console.log('   💡 If package.json is intentional, add to config:');
+                    console.log('      "allowedDevFiles": ["package.json"]');
+                }
+                
+                // 一般的な対策
+                console.log('   💡 To exclude directories, add to config:');
+                const topDir = sortedDirs[0]?.[0];
+                if (topDir && topDir !== 'root') {
+                    console.log(`      "exclude": ["${topDir}/**"]`);
+                }
+                
+                // 詳細なエラーメッセージ（最初の10ファイルのみ）
+                const displayFiles = foundDevFiles.slice(0, 10);
+                const remaining = foundDevFiles.length > 10 ? ` and ${foundDevFiles.length - 10} more` : '';
+                throw new Error(`Development files found: ${displayFiles.join(', ')}${remaining}`);
             }
         });
 
@@ -473,9 +508,19 @@ class StructureTestSuite extends TestSuite {
             // クリティカルな問題がある場合
             const criticalResults = results.filter(r => r.severity === 'critical');
             if (criticalResults.length > 0) {
-                const error = new Error(`Excessive console usage detected in ${criticalResults.length} files`);
-                error.code = 'CONSOLE_USAGE_CRITICAL';
+                // 詳細なエラーメッセージを作成
+                const details = criticalResults
+                    .slice(0, 5) // 最初の5ファイルを表示
+                    .map(r => `${r.file}: ${r.count} occurrences (threshold: ${r.threshold})`)
+                    .join('\n      - ');
+                
+                const remaining = criticalResults.length > 5 ? `\n      - ... (and ${criticalResults.length - 5} more files)` : '';
+                
+                const error = new Error(`Excessive console.log usage detected:\n      - ${details}${remaining}`);
+                error.code = 'CODE_QUALITY';
+                error.category = 'CODE_QUALITY';
                 error.details = results;
+                error.severity = 'critical';
                 throw error;
             }
         });

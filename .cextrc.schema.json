@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chrome Extension Test Framework Configuration",
+  "description": "Configuration schema for Chrome Extension Test Framework",
+  "type": "object",
+  "properties": {
+    "extensionPath": {
+      "type": "string",
+      "description": "Path to the Chrome extension directory to test"
+    },
+    "output": {
+      "type": "object",
+      "description": "Output configuration for test results",
+      "properties": {
+        "format": {
+          "type": "array",
+          "description": "Output formats for test results",
+          "items": {
+            "type": "string",
+            "enum": ["console", "json", "html", "markdown", "junit"]
+          },
+          "default": ["console", "json", "html"]
+        },
+        "directory": {
+          "type": "string",
+          "description": "Directory to save test reports",
+          "default": "./test-results"
+        },
+        "filename": {
+          "type": "string",
+          "description": "Base filename for test reports (without extension)",
+          "default": "test-report"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Toggle specific validation checks",
+      "properties": {
+        "manifest": {
+          "type": "boolean",
+          "description": "Enable manifest.json validation",
+          "default": true
+        },
+        "permissions": {
+          "type": "boolean",
+          "description": "Enable permissions validation",
+          "default": true
+        },
+        "csp": {
+          "type": "boolean",
+          "description": "Enable Content Security Policy validation",
+          "default": true
+        },
+        "icons": {
+          "type": "boolean",
+          "description": "Enable icon validation",
+          "default": true
+        },
+        "locales": {
+          "type": "boolean",
+          "description": "Enable localization validation",
+          "default": true
+        }
+      }
+    },
+    "exclude": {
+      "type": "array",
+      "description": "Glob patterns for files/directories to completely exclude from scanning",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        ["node_modules/**", "test/**", "*.test.js"]
+      ]
+    },
+    "include": {
+      "type": "array",
+      "description": "Glob patterns for files/directories to include (overrides exclude)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ignorePatterns": {
+      "type": "array",
+      "description": "Patterns to ignore in specific tests (less strict than exclude)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowedDevFiles": {
+      "type": "array",
+      "description": "Development files that are allowed in the extension",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        ["package.json", "*.config.js", "test/**/*"]
+      ]
+    },
+    "consoleThresholds": {
+      "type": "object",
+      "description": "Maximum allowed console.log calls by file type",
+      "properties": {
+        "production": {
+          "type": "number",
+          "description": "Threshold for production code files",
+          "default": 10
+        },
+        "development": {
+          "type": "number",
+          "description": "Threshold for development files",
+          "default": 100
+        },
+        "test": {
+          "type": "number",
+          "description": "Threshold for test files (use null for unlimited)",
+          "default": null
+        }
+      }
+    },
+    "profile": {
+      "type": "string",
+      "description": "Predefined configuration profile to use",
+      "enum": ["development", "production", "ci", "quick", "security-focused", "performance", "minimal"]
+    },
+    "parallel": {
+      "type": "boolean",
+      "description": "Run test suites in parallel",
+      "default": false
+    },
+    "timeout": {
+      "type": "number",
+      "description": "Test timeout in milliseconds",
+      "default": 30000,
+      "minimum": 1000
+    },
+    "failOnWarning": {
+      "type": "boolean",
+      "description": "Exit with error code if warnings are found",
+      "default": false
+    },
+    "failOnError": {
+      "type": "boolean",
+      "description": "Exit with error code if errors are found",
+      "default": true
+    },
+    "rules": {
+      "type": "array",
+      "description": "Custom validation rules",
+      "items": {
+        "type": "object"
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "description": "Plugins to load",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warningLevels": {
+      "type": "object",
+      "description": "Configure warning levels for specific checks",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["ignore", "info", "warning", "error"]
+      }
+    },
+    "maxFileSize": {
+      "type": "number",
+      "description": "Maximum allowed file size in bytes",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

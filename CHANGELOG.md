@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.0] - 2025-06-16
+
+### Added
+- **Enhanced console detection**: Now detects all console methods (table, trace, group, time, etc.)
+  - Detects indirect console usage through destructuring
+  - Detects aliased console methods
+- **--init command**: Initialize a new configuration file with sensible defaults
+  - Includes VS Code schema support
+  - Common exclude patterns pre-configured
+  - Console thresholds for different file types
+- **--quiet flag**: Quiet mode for CI environments
+  - Shows only errors and warnings
+  - Compact output format
+  - Suppresses all decorative output
+- **Better error/warning differentiation**: Visual improvements for error reporting
+  - Color-coded error levels (ERROR, WARNING, CRITICAL)
+  - ANSI color support with automatic detection
+  - Clearer visual hierarchy
+
+### Changed
+- ConsoleAnalyzer now provides more comprehensive console usage detection
+- Error messages now include colored labels for better visibility
+
+## [1.11.0] - 2025-06-16
+
+### Added
+- **Detailed error messages for console.log detection**: Shows file list with occurrence counts instead of just total count
+- **Development file summary view**: Shows summary by directory instead of listing hundreds of files
+  - Top directories with file counts
+  - More user-friendly output for large projects
+- **Configuration debug mode (--debug-config)**: Shows detailed configuration loading process
+  - File discovery and exclusion process
+  - Configuration priority and final values
+  - Test execution plan
+- **JSON Schema for configuration files**: Enables VS Code autocomplete and validation
+  - Add `"$schema": "./node_modules/chrome-extension-test-framework/.cextrc.schema.json"` to .cextrc.json
+- **Configuration priority documentation**: Clear explanation of configuration precedence in README
+
+### Changed
+- **Error categorization improvements**: 
+  - Added CODE_QUALITY category for non-framework errors
+  - INTERNAL_ERROR now only used for actual framework bugs
+  - console.log and development file errors now use CODE_QUALITY category
+- **Improved error messages**: More helpful and actionable error descriptions
+
+### Fixed
+- Error categories now properly distinguish between code quality issues and internal framework errors
+
 ## [1.10.1] - 2025-06-16
 
 ### Fixed
@@ -361,7 +409,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.10.1...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.12.0...HEAD
+[1.12.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.11.0...v1.12.0
+[1.11.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.10.1...v1.11.0
 [1.10.1]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.8.0...v1.9.0

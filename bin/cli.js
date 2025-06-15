@@ -37,7 +37,9 @@ const options = {
     sinceLastRun: false,
     clearCache: false,
     noVersionCheck: false,
-    showConfig: false
+    showConfig: false,
+    init: false,
+    quiet: false
 };
 
 // 引数を解析
@@ -146,6 +148,20 @@ for (let i = 0; i < args.length; i++) {
             options.showConfig = true;
             break;
             
+        case '--debug-config':
+            options.debugConfig = true;
+            break;
+            
+        case '--init':
+            options.init = true;
+            break;
+            
+        case '--quiet':
+        case '-q':
+            options.quiet = true;
+            options.progress = false;
+            break;
+            
         default:
             if (!arg.startsWith('-')) {
                 options.extensionPath = path.resolve(arg);
@@ -184,6 +200,9 @@ Options:
   --clear-cache           Clear the test cache
   --no-version-check      Disable update notifications
   --show-config           Show the current configuration and exit
+  --debug-config          Show detailed configuration loading process
+  --init                  Initialize a new configuration file
+  -q, --quiet             Quiet mode for CI (errors/warnings only)
 
 Test Suites:
   manifest      - Validate manifest.json
@@ -233,6 +252,59 @@ Configuration:
 if (options.version) {
     console.log(`v${VERSION}`);
     process.exit(0);
+}
+
+// 設定ファイルの初期化
+if (options.init) {
+    const configPath = path.join(process.cwd(), '.cextrc.json');
+    
+    if (fs.existsSync(configPath)) {
+        console.error('❌ Configuration file already exists: .cextrc.json');
+        console.log('💡 Use --config to specify a different config file');
+        process.exit(1);
+    }
+    
+    const defaultConfig = {
+        "$schema": "./node_modules/chrome-extension-test-framework/.cextrc.schema.json",
+        "extensionPath": ".",
+        "output": {
+            "format": ["console", "json"],
+            "directory": "./test-results"
+        },
+        "exclude": [
+            "node_modules/**",
+            "test/**",
+            "tests/**",
+            "*.test.js",
+            "*.spec.js"
+        ],
+        "consoleThresholds": {
+            "production": 10,
+            "development": 50,
+            "test": null
+        },
+        "profile": "development",
+        "failOnError": true,
+        "failOnWarning": false
+    };
+    
+    try {
+        fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2));
+        console.log('✅ Created .cextrc.json configuration file');
+        console.log('\n📝 Configuration includes:');
+        console.log('   • VS Code autocomplete support ($schema)');
+        console.log('   • Common exclude patterns');
+        console.log('   • Console usage thresholds');
+        console.log('   • Development profile by default');
+        console.log('\n💡 Next steps:');
+        console.log('   1. Edit .cextrc.json to customize settings');
+        console.log('   2. Run: cext-test');
+        console.log('\n📚 Documentation: https://github.com/ibushimaru/chrome-extension-test-framework');
+        process.exit(0);
+    } catch (error) {
+        console.error(`❌ Failed to create config file: ${error.message}`);
+        process.exit(1);
+    }
 }
 
 // 拡張機能パスの検証
@@ -302,7 +374,8 @@ async function runTests() {
             failOnError: options.failOnError,
             profile: options.profile,
             progress: options.progress,
-            verbose: options.verbose
+            verbose: options.verbose,
+            quiet: options.quiet
         });
 
         // 設定ファイルを読み込み
@@ -325,6 +398,57 @@ async function runTests() {
         // プロファイルが指定されている場合（設定ファイル後に適用）
         if (options.profile && !framework.config.profile) {
             framework.applyProfile(options.profile);
+        }
+        
+        // --debug-configオプションの処理
+        if (options.debugConfig) {
+            console.log('🔍 Configuration Debug Mode\n');
+            
+            console.log('1. Loading configuration...');
+            console.log(`   ✅ Working directory: ${process.cwd()}`);
+            console.log(`   ✅ Extension path: ${options.extensionPath}`);
+            
+            if (defaultConfigPath) {
+                console.log(`   ✅ Config file found: ${defaultConfigPath}`);
+                console.log(`   ✅ Config loaded from: ${path.basename(defaultConfigPath)}`);
+            } else {
+                console.log('   ℹ️  No config file found, using defaults');
+            }
+            
+            if (options.profile) {
+                console.log(`   ✅ Profile applied: ${options.profile}`);
+            }
+            
+            console.log('\n2. File discovery...');
+            // ファイル探索のシミュレーション
+            const allFiles = await framework.suites[0]?.getAllFiles('', [], { skipExclude: true }) || [];
+            console.log(`   ✅ Total files found: ${allFiles.length}`);
+            
+            if (framework.config.exclude && framework.config.exclude.length > 0) {
+                console.log(`\n3. Applying exclude patterns: ${JSON.stringify(framework.config.exclude)}`);
+                const excludedCount = allFiles.length - (await framework.suites[0]?.getAllFiles() || []).length;
+                console.log(`   ✅ Files excluded: ${excludedCount}`);
+            }
+            
+            console.log('\n4. Final configuration:');
+            console.log(`   - Console thresholds:`);
+            console.log(`     • production: ${framework.config.consoleThresholds?.production || 10}`);
+            console.log(`     • development: ${framework.config.consoleThresholds?.development || 100}`);
+            console.log(`     • test: ${framework.config.consoleThresholds?.test || 'Infinity'}`);
+            
+            if (framework.config.allowedDevFiles) {
+                console.log(`   - Allowed dev files: ${JSON.stringify(framework.config.allowedDevFiles)}`);
+            }
+            
+            console.log('\n5. Test execution plan:');
+            const testSuites = options.suites.includes('all') ? 
+                ['manifest', 'security', 'performance', 'structure', 'localization'] : 
+                options.suites;
+            console.log(`   - Test suites: ${testSuites.join(', ')}`);
+            console.log(`   - Parallel execution: ${framework.config.parallel ? 'enabled' : 'disabled'}`);
+            console.log(`   - Timeout: ${framework.config.timeout}ms`);
+            
+            process.exit(0);
         }
         
         // --show-configオプションの処理

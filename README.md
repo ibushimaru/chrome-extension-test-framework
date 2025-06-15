@@ -334,7 +334,35 @@ const versionTest = TestCase.expect(
 
 ## 設定ファイル
 
+### 設定の優先順位
+
+設定は以下の順序で適用されます（後のものが前のものを上書き）：
+
+1. **デフォルト設定** - フレームワークの組み込み設定
+2. **設定ファイル** - `.cextrc.json`、`cext-test.config.js`など
+3. **プロファイル設定** - `--profile`オプションで指定
+4. **CLIオプション** - コマンドライン引数で指定
+
+### ファイルフィルタリングの順序
+
+1. **exclude** - 完全に除外（スキャンもテストもされない）
+2. **ignorePatterns** - 特定のテストでは無視（将来実装）
+3. **allowedDevFiles** - 開発ファイルチェックで許可される
+
+### 設定ファイルの作成
+
 `cext-test.config.js`または`.cextrc.json`を作成:
+
+#### VS Code での自動補完（v1.11.0+）
+
+`.cextrc.json`でVS Codeの自動補完を有効にするには、ファイルの先頭に以下を追加：
+
+```json
+{
+  "$schema": "./node_modules/chrome-extension-test-framework/.cextrc.schema.json",
+  // 以下、設定内容
+}
+```
 
 ```javascript
 module.exports = {
@@ -535,6 +563,19 @@ A: `--parallel`オプションを使用して並列実行を有効にするか�
 A: `.cextignore`ファイルを作成し、除外したいファイルやディレクトリを指定してください。
 
 ## バージョン履歴
+
+### v1.12.0 (2025-06-16)
+- 🆕 拡張console検出（すべてのconsoleメソッド、間接使用検出）
+- 🆕 --initコマンド（設定ファイルの初期化）
+- 🆕 --quietフラグ（CI用の静かなモード）
+- 🆕 エラー/警告の視覚的区別改善
+
+### v1.11.0 (2025-06-16)
+- 🆕 詳細なエラーメッセージ（console.log検出時のファイルリスト表示）
+- 🆕 開発ファイルサマリー表示（ディレクトリ別の集計）
+- 🆕 設定デバッグモード（--debug-config）
+- 🆕 JSON Schema提供（VS Code自動補完対応）
+- 🆕 設定優先順位のドキュメント化
 
 ### v1.10.1 (2025-06-16)
 - 🔧 開発ファイル検出バグの修正（ExcludeManagerとの競合を解決）
