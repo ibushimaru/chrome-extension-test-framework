@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2025-06-15
+
+### Added
+- **PerformanceAnalyzer**: Comprehensive performance issue detection
+  - Memory leak pattern detection (event listeners, timers, growing arrays)
+  - Heavy computation detection (nested loops, expensive algorithms)
+  - Excessive DOM manipulation detection
+  - Bundle size and optimization analysis
+  - CSS performance issue detection
+  - Duplicate code detection
+- **Enhanced Performance Tests**: Deep integration with PerformanceAnalyzer
+  - Memory leak prevention with detailed pattern analysis
+  - JavaScript optimization with bundle and computation checks
+  - Service worker efficiency analysis
+  - Loading time optimization with bundle size checks
+  - Animation performance with DOM manipulation detection
+- **Performance Test Scenarios**: Real-world performance problem examples
+  - memory-leak: Various memory leak patterns
+  - heavy-computation: Blocking main thread operations
+  - large-bundle: Unnecessarily large JavaScript bundles
+  - excessive-dom: Creating excessive DOM elements
+
+### Changed
+- PerformanceTestSuite now uses PerformanceAnalyzer for deeper analysis
+- Improved detection of performance bottlenecks
+- Enhanced error reporting with specific performance issue details
+
+### Fixed
+- Regular expression escaping in CSS property detection
+
 ## [1.7.0] - 2025-06-15
 
 ### Added
@@ -250,7 +280,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.4.0...v1.5.0

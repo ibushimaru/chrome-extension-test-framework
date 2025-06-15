@@ -16,7 +16,7 @@ const ProfileManager = require('./lib/ProfileManager');
 const IncrementalTester = require('./lib/IncrementalTester');
 
 // フレームワークのバージョン
-const VERSION = '1.7.0';
+const VERSION = '1.8.0';
 
 // デフォルト設定
 const DEFAULT_CONFIG = {

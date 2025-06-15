@@ -1,0 +1,101 @@
+/* Styles that make DOM even heavier */
+
+/* Using universal selector (bad for performance) */
+* {
+    box-sizing: border-box;
+    position: relative; /* Forces layout calculations */
+}
+
+/* Expensive selectors */
+body * div * span {
+    color: inherit;
+}
+
+div > div > div > div {
+    margin: 1px;
+}
+
+/* Animating properties that trigger layout */
+.list-item {
+    transition: all 0.3s; /* Bad: animating 'all' */
+    will-change: auto; /* Bad: no specific optimization */
+}
+
+.list-item:hover {
+    transform: scale(1.05);
+    margin: 2px; /* Triggers layout */
+    padding: 10px; /* Triggers layout */
+}
+
+/* Complex selectors that are slow to match */
+.container > .wrapper > .content > .item:nth-child(odd) > .details > p:first-child::before {
+    content: '→';
+}
+
+/* Using expensive pseudo-selectors */
+div:nth-child(3n+1):not(:first-child):not(:last-child) {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Forcing recalculation with calc() */
+.item {
+    width: calc(100% - 20px);
+    height: calc(100vh / 10);
+    padding: calc(1em + 2px);
+}
+
+/* Using filters (expensive) */
+.item:hover {
+    filter: blur(1px) brightness(1.1) contrast(1.1);
+}
+
+/* Complex gradients */
+.item-header {
+    background: linear-gradient(
+        45deg,
+        #ff0000 0%,
+        #ff7f00 14.28%,
+        #ffff00 28.56%,
+        #00ff00 42.84%,
+        #0000ff 57.12%,
+        #4b0082 71.4%,
+        #9400d3 85.68%,
+        #ff0000 100%
+    );
+}
+
+/* Expensive shadows */
+.popup-item {
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.1),
+        0 2px 4px rgba(0,0,0,0.1),
+        0 4px 8px rgba(0,0,0,0.1),
+        0 8px 16px rgba(0,0,0,0.1),
+        0 16px 32px rgba(0,0,0,0.1);
+}
+
+/* Using CSS counters (forces recalculation) */
+body {
+    counter-reset: item-counter;
+}
+
+.list-item::before {
+    counter-increment: item-counter;
+    content: counter(item-counter) ". ";
+}
+
+/* Expensive text effects */
+.item-text {
+    text-shadow: 
+        1px 1px 1px rgba(0,0,0,0.1),
+        2px 2px 2px rgba(0,0,0,0.1),
+        3px 3px 3px rgba(0,0,0,0.1);
+}
+
+/* Using viewport units everywhere (causes recalc on resize) */
+.grid-item {
+    width: 10vw;
+    height: 10vh;
+    font-size: 1vmin;
+    padding: 0.5vmax;
+}
