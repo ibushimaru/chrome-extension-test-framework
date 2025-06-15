@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-test-framework",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Universal testing framework for Chrome extensions - Fast static analysis without browser dependencies",
   "main": "index.js",
   "bin": {
@@ -42,7 +42,14 @@
     "lib/",
     "suites/",
     "bin/",
+    "scripts/",
     "README.md",
-    "LICENSE"
-  ]
+    "LICENSE",
+    "CHANGELOG.md",
+    "example.config.js"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }

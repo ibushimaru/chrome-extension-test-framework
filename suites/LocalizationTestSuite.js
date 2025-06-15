@@ -195,7 +195,7 @@ class LocalizationTestSuite extends TestSuite {
                 // ハードコードされた文字列の検出（簡易的）
                 const stringLiterals = content.match(/['"]([^'"]{10,})['"](?!\s*[,:])/g) || [];
                 const suspiciousStrings = stringLiterals.filter(str => {
-                    const cleaned = str.replace(/['"]g, '');
+                    const cleaned = str.replace(/['"]/g, '');
                     return /[A-Z]/.test(cleaned) && /\s/.test(cleaned); // 大文字とスペースを含む
                 });
                 
