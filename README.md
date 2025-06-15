@@ -15,6 +15,7 @@
 - 🛠️ **拡張可能** - カスタムテストスイートとバリデーターの追加が可能
 - 🌍 **汎用性** - あらゆるChrome拡張機能に対応
 - 🔧 **CI/CD対応** - 終了コードによる自動化サポート
+- 💡 **詳細なエラーメッセージ** - エラーコード、修正提案、コード例、ドキュメントリンク付き (v1.2.0+)
 
 ## インストール
 
@@ -115,6 +116,24 @@ framework.addSuite({
 // テスト実行
 const results = await framework.run();
 ```
+
+## 詳細なエラーメッセージ (v1.2.0+)
+
+エラーが検出された場合、以下のような詳細な情報が提供されます：
+
+```
+❌ ValidationError: Required field "name" is missing from manifest.json
+   Error Code: MISSING_REQUIRED_FIELD
+   Details:
+      missingFields: ["name"]
+      totalRequired: 3
+   💡 Suggestion: Add the "name" field to your manifest.json file
+   Example:
+      "name": "My Extension"
+   📚 Documentation: https://developer.chrome.com/docs/extensions/mv3/manifest/
+```
+
+エラーコードの完全なリファレンスは [ERROR_CODES.md](ERROR_CODES.md) を参照してください。
 
 ## ビルトインテストスイート
 
@@ -254,6 +273,42 @@ test:
   artifacts:
     paths:
       - test-results/
+```
+
+## 詳細なエラーメッセージ
+
+このフレームワークは、開発者にとって役立つ詳細なエラーメッセージを提供します：
+
+### エラーメッセージの内容
+
+- **エラーコード**: 簡単に参照できる一意のコード
+- **詳細な説明**: 問題の具体的な内容
+- **修正提案**: 問題を解決するための具体的な手順
+- **コード例**: 正しい実装の例
+- **ドキュメントリンク**: Chrome Extensionsの公式ドキュメントへのリンク
+
+### エラーメッセージの例
+
+```
+❌ ValidationError: Required field "name" is missing from manifest.json
+   Error Code: MISSING_REQUIRED_FIELD
+   File: manifest.json
+   💡 Suggestion: Add the "name" field to your manifest.json file
+   Example:
+      "name": "My Extension"
+   📚 Documentation: https://developer.chrome.com/docs/extensions/mv3/manifest/
+```
+
+### エラーコードリファレンス
+
+詳細なエラーコードの一覧と解決方法については、[docs/ERROR_CODES.md](docs/ERROR_CODES.md)を参照してください。
+
+### エラーメッセージのデモ
+
+強化されたエラーメッセージを確認するには：
+
+```bash
+npm run test:errors
 ```
 
 ## API リファレンス
