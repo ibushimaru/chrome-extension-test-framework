@@ -117,7 +117,17 @@ class ManifestTestSuite extends TestSuite {
             
             const versionRegex = /^\d+(\.\d+){0,3}$/;
             if (!versionRegex.test(manifest.version)) {
-                throw ValidationError.invalidVersion(manifest.version);
+                throw new ValidationError({
+                    code: ValidationError.CODES.INVALID_VERSION,
+                    message: 'Invalid version format',
+                    field: 'version',
+                    actual: manifest.version,
+                    expected: 'X.Y.Z format (e.g., 1.0.0)',
+                    severity: 'high',
+                    suggestion: 'Use semantic versioning format: major.minor.patch',
+                    example: '"version": "1.0.0"',
+                    documentation: 'https://developer.chrome.com/docs/extensions/mv3/manifest/version/'
+                });
             }
         });
 
@@ -126,11 +136,17 @@ class ManifestTestSuite extends TestSuite {
             const manifest = await this.loadManifest(config);
             
             if (manifest.name && manifest.name.length > 45) {
-                throw ValidationError.invalidFieldValue(
-                    'name',
-                    `${manifest.name.substring(0, 20)}... (${manifest.name.length} characters)`,
-                    'string with maximum 45 characters'
-                );
+                throw new ValidationError({
+                    code: ValidationError.CODES.INVALID_FIELD_VALUE,
+                    message: 'Name exceeds maximum length of 45 characters',
+                    field: 'name',
+                    actual: `${manifest.name.substring(0, 20)}... (${manifest.name.length} characters)`,
+                    expected: 'string with maximum 45 characters',
+                    severity: 'medium',
+                    suggestion: 'Shorten the extension name to 45 characters or less',
+                    example: '"name": "My Extension"',
+                    documentation: 'https://developer.chrome.com/docs/extensions/mv3/manifest/name/'
+                });
             }
         });
 
@@ -139,11 +155,17 @@ class ManifestTestSuite extends TestSuite {
             const manifest = await this.loadManifest(config);
             
             if (manifest.description && manifest.description.length > 132) {
-                throw ValidationError.invalidFieldValue(
-                    'description',
-                    `${manifest.description.substring(0, 30)}... (${manifest.description.length} characters)`,
-                    'string with maximum 132 characters'
-                );
+                throw new ValidationError({
+                    code: ValidationError.CODES.INVALID_FIELD_VALUE,
+                    message: 'Description exceeds maximum length of 132 characters',
+                    field: 'description',
+                    actual: `${manifest.description.substring(0, 30)}... (${manifest.description.length} characters)`,
+                    expected: 'string with maximum 132 characters',
+                    severity: 'medium',
+                    suggestion: 'Shorten the description to 132 characters or less',
+                    example: '"description": "A brief description of your extension"',
+                    documentation: 'https://developer.chrome.com/docs/extensions/mv3/manifest/description/'
+                });
             }
         });
 
@@ -163,10 +185,16 @@ class ManifestTestSuite extends TestSuite {
                 for (const [size, iconPath] of Object.entries(manifest.icons)) {
                     const fullPath = path.join(config.extensionPath, iconPath);
                     if (!fs.existsSync(fullPath)) {
-                        throw StructureError.fileNotFound(
-                            iconPath,
-                            `Icon file for size ${size}x${size} pixels`
-                        );
+                        throw new StructureError({
+                            code: StructureError.CODES.MISSING_REQUIRED_FILE,
+                            message: `Icon file not found: ${iconPath}`,
+                            path: iconPath,
+                            missingItems: [iconPath],
+                            severity: 'high',
+                            suggestion: `Add the icon file at ${iconPath} or update the path in manifest.json`,
+                            example: `Place a ${size}x${size} pixel PNG image at: ${iconPath}`,
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/manifest/icons/'
+                        });
                     }
                 }
             }
@@ -178,19 +206,30 @@ class ManifestTestSuite extends TestSuite {
             
             if (manifest.background) {
                 if (!manifest.background.service_worker) {
-                    throw ValidationError.missingRequiredField(
-                        'background.service_worker',
-                        'background configuration'
-                    );
+                    throw new ValidationError({
+                        code: ValidationError.CODES.MISSING_REQUIRED_FIELD,
+                        message: 'Service worker is required for background scripts in Manifest V3',
+                        field: 'background.service_worker',
+                        severity: 'critical',
+                        suggestion: 'Add a service_worker field to the background object',
+                        example: '"background": {\n  "service_worker": "background.js"\n}',
+                        documentation: 'https://developer.chrome.com/docs/extensions/mv3/background_pages/'
+                    });
                 }
                 
                 // Service Workerファイルの存在確認
                 const swPath = path.join(config.extensionPath, manifest.background.service_worker);
                 if (!fs.existsSync(swPath)) {
-                    throw StructureError.fileNotFound(
-                        manifest.background.service_worker,
-                        'Service worker handles background tasks for the extension'
-                    );
+                    throw new StructureError({
+                        code: StructureError.CODES.MISSING_REQUIRED_FILE,
+                        message: `Service worker file not found: ${manifest.background.service_worker}`,
+                        path: manifest.background.service_worker,
+                        missingItems: [manifest.background.service_worker],
+                        severity: 'critical',
+                        suggestion: `Create the service worker file at ${manifest.background.service_worker}`,
+                        example: 'Service worker handles background tasks for the extension',
+                        documentation: 'https://developer.chrome.com/docs/extensions/mv3/service_workers/'
+                    });
                 }
             }
         });
@@ -203,10 +242,15 @@ class ManifestTestSuite extends TestSuite {
                 manifest.content_scripts.forEach((script, index) => {
                     // matchesパターンの確認
                     if (!script.matches || script.matches.length === 0) {
-                        throw ValidationError.missingRequiredField(
-                            `content_scripts[${index}].matches`,
-                            'content script configuration'
-                        );
+                        throw new ValidationError({
+                            code: ValidationError.CODES.MISSING_REQUIRED_FIELD,
+                            message: `Content script at index ${index} is missing matches patterns`,
+                            field: `content_scripts[${index}].matches`,
+                            severity: 'critical',
+                            suggestion: 'Add matches patterns to specify which pages the content script should run on',
+                            example: '"matches": ["https://*.example.com/*"]',
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/content_scripts/'
+                        });
                     }
                     
                     // スクリプトファイルの存在確認
@@ -214,10 +258,19 @@ class ManifestTestSuite extends TestSuite {
                         script.js.forEach(jsPath => {
                             const fullPath = path.join(config.extensionPath, jsPath);
                             if (!fs.existsSync(fullPath)) {
-                                throw StructureError.fileNotFound(
-                                    jsPath,
-                                    `Content script file (index: ${index})`
-                                );
+                                throw new StructureError({
+                                    code: StructureError.CODES.MISSING_REQUIRED_FILE,
+                                    message: `Content script file not found: ${jsPath}`,
+                                    path: jsPath,
+                                    missingItems: [jsPath],
+                                    severity: 'critical',
+                                    details: {
+                                        scriptIndex: index
+                                    },
+                                    suggestion: `Create the content script file at ${jsPath}`,
+                                    example: `Content script file (index: ${index})`,
+                                    documentation: 'https://developer.chrome.com/docs/extensions/mv3/content_scripts/'
+                                });
                             }
                         });
                     }
@@ -258,10 +311,15 @@ class ManifestTestSuite extends TestSuite {
             if (manifest.web_accessible_resources) {
                 manifest.web_accessible_resources.forEach((resource, index) => {
                     if (!resource.resources || resource.resources.length === 0) {
-                        throw ValidationError.missingRequiredField(
-                            `web_accessible_resources[${index}].resources`,
-                            'web accessible resources configuration'
-                        );
+                        throw new ValidationError({
+                            code: ValidationError.CODES.MISSING_REQUIRED_FIELD,
+                            message: `Web accessible resource at index ${index} is missing resources array`,
+                            field: `web_accessible_resources[${index}].resources`,
+                            severity: 'high',
+                            suggestion: 'Add a resources array listing the files to make accessible',
+                            example: '"resources": ["images/*.png", "styles/*.css"]',
+                            documentation: 'https://developer.chrome.com/docs/extensions/mv3/manifest/web_accessible_resources/'
+                        });
                     }
                     
                     if (!resource.matches || resource.matches.length === 0) {
@@ -278,18 +336,30 @@ class ManifestTestSuite extends TestSuite {
             if (manifest.default_locale) {
                 const localesDir = path.join(config.extensionPath, '_locales', manifest.default_locale);
                 if (!fs.existsSync(localesDir)) {
-                    throw StructureError.fileNotFound(
-                        `_locales/${manifest.default_locale}`,
-                        'Directory for default locale messages'
-                    );
+                    throw new StructureError({
+                        code: StructureError.CODES.MISSING_REQUIRED_FILE,
+                        message: `Default locale directory not found: _locales/${manifest.default_locale}`,
+                        path: `_locales/${manifest.default_locale}`,
+                        missingItems: [`_locales/${manifest.default_locale}`],
+                        severity: 'high',
+                        suggestion: `Create the locale directory at _locales/${manifest.default_locale}`,
+                        example: 'Directory for default locale messages',
+                        documentation: 'https://developer.chrome.com/docs/extensions/reference/i18n/'
+                    });
                 }
                 
                 const messagesFile = path.join(localesDir, 'messages.json');
                 if (!fs.existsSync(messagesFile)) {
-                    throw StructureError.fileNotFound(
-                        `_locales/${manifest.default_locale}/messages.json`,
-                        'Localization messages file'
-                    );
+                    throw new StructureError({
+                        code: StructureError.CODES.MISSING_REQUIRED_FILE,
+                        message: `Messages file not found for default locale: _locales/${manifest.default_locale}/messages.json`,
+                        path: `_locales/${manifest.default_locale}/messages.json`,
+                        missingItems: [`_locales/${manifest.default_locale}/messages.json`],
+                        severity: 'high',
+                        suggestion: `Create a messages.json file in _locales/${manifest.default_locale}/`,
+                        example: '{\n  "appName": {\n    "message": "My Extension"\n  }\n}',
+                        documentation: 'https://developer.chrome.com/docs/extensions/reference/i18n/'
+                    });
                 }
             }
         });

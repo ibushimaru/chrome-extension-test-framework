@@ -155,10 +155,16 @@ class StructureTestSuite extends TestSuite {
             
             if (missingFiles.length > 0) {
                 // Throw error for the first missing file
-                throw StructureError.fileNotFound(
-                    missingFiles[0],
-                    'This is a required file for Chrome extensions'
-                );
+                throw new StructureError({
+                    code: StructureError.CODES.MISSING_REQUIRED_FILE,
+                    message: `Required file not found: ${missingFiles[0]}`,
+                    path: missingFiles[0],
+                    missingItems: missingFiles,
+                    severity: 'critical',
+                    suggestion: `Create the required file: ${missingFiles[0]}`,
+                    example: 'This is a required file for Chrome extensions',
+                    documentation: 'https://developer.chrome.com/docs/extensions/mv3/getstarted/'
+                });
             }
             
             // 推奨ファイル
