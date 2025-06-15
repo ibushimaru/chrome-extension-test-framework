@@ -5,6 +5,7 @@
 const TestSuite = require('../lib/TestSuite');
 const fs = require('fs');
 const path = require('path');
+const FileSizeAnalyzer = require('../lib/FileSizeAnalyzer');
 
 class PerformanceTestSuite extends TestSuite {
     constructor(config) {
@@ -18,26 +19,64 @@ class PerformanceTestSuite extends TestSuite {
     }
 
     setupTests() {
-        // ファイルサイズの検証
+        // ファイルサイズの検証（改善版）
         this.test('File size limits', async (config) => {
-            const results = await this.analyzeFileSizes(config.extensionPath);
+            const analyzer = new FileSizeAnalyzer();
+            const analysis = await analyzer.analyze(config.extensionPath);
+            const report = analyzer.generateReport();
             
-            // 大きすぎるファイルの警告
-            const largeFiles = results.filter(file => file.size > 1024 * 1024); // 1MB以上
-            
-            if (largeFiles.length > 0) {
+            // 大きなファイルの警告表示
+            if (analysis.largeFiles.length > 0) {
                 console.warn('   ⚠️  Large files detected:');
-                largeFiles.forEach(file => {
-                    console.warn(`      - ${file.path}: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+                analysis.largeFiles.forEach(file => {
+                    const severity = file.severity === 'critical' ? '🚨' : 
+                                   file.severity === 'error' ? '❌' : '⚠️';
+                    console.warn(`      ${severity} ${file.path}: ${analyzer.formatSize(file.size)}`);
                 });
             }
             
-            // 拡張機能の総サイズ
-            const totalSize = results.reduce((sum, file) => sum + file.size, 0);
-            const totalSizeMB = totalSize / 1024 / 1024;
+            // ファイルタイプ別の分析表示
+            if (config.verbose) {
+                console.log('   📊 File size breakdown:');
+                for (const [type, data] of Object.entries(report.byType)) {
+                    if (data.count > 0) {
+                        console.log(`      - ${type}: ${data.count} files, ${data.totalSize} (${data.percentage})`);
+                    }
+                }
+            }
             
-            if (totalSizeMB > 10) {
-                throw new Error(`Extension size too large: ${totalSizeMB.toFixed(2)}MB (recommended: < 10MB)`);
+            // 提案事項の表示
+            analysis.suggestions.forEach(suggestion => {
+                console.log(`   💡 ${suggestion.message}`);
+                console.log(`      → ${suggestion.suggestion}`);
+            });
+            
+            // クリティカルなエラーがあれば例外を投げる
+            const criticalErrors = analysis.warnings.filter(w => w.severity === 'critical');
+            if (criticalErrors.length > 0) {
+                const error = new Error(`Critical file size issues detected: ${criticalErrors.length} files exceed limits`);
+                error.code = 'FILE_SIZE_CRITICAL';
+                error.severity = 'critical';
+                error.details = {
+                    files: criticalErrors,
+                    report: report
+                };
+                error.suggestions = analysis.suggestions;
+                throw error;
+            }
+            
+            // エラーレベルの警告がある場合
+            const errors = analysis.warnings.filter(w => w.severity === 'error');
+            if (errors.length > 0) {
+                const error = new Error(`File size issues detected: ${errors.length} files are too large`);
+                error.code = 'FILE_SIZE_ERROR';
+                error.severity = 'high';
+                error.details = {
+                    files: errors,
+                    report: report
+                };
+                error.suggestions = analysis.suggestions;
+                throw error;
             }
         });
 
