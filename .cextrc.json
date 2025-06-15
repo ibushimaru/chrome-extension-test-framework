@@ -3,5 +3,10 @@
     "test/**",
     "docs/**",
     "*.test.js"
-  ]
+  ],
+  "consoleThresholds": {
+    "development": 50,
+    "production": 5,
+    "test": 1000
+  }
 }

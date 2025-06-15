@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - production: Strict validation, all tests enabled
   - quick: Fast subset of tests for pre-commit hooks
 - **--show-config option**: Display current configuration and exclude patterns
+- **Console usage thresholds**: Configurable thresholds for console.log usage
+  - Can be set via config file (consoleThresholds)
+  - Different thresholds for development, production, and test files
+  - Integrated with ConsoleAnalyzer for detailed analysis
 
 ### Changed
 - ExcludeManager now properly uses extensionPath as base for relative paths
@@ -309,7 +313,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.5.0...v1.6.0

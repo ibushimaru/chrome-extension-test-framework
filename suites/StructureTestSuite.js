@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const FileNameValidator = require('../lib/FileNameValidator');
 const DirectoryAnalyzer = require('../lib/DirectoryAnalyzer');
+const ConsoleAnalyzer = require('../lib/ConsoleAnalyzer');
 
 class StructureTestSuite extends TestSuite {
     constructor(config) {
@@ -359,6 +360,78 @@ class StructureTestSuite extends TestSuite {
                 const error = new Error(`Critical directory structure issues: ${criticalIssues[0].message}`);
                 error.code = 'DIRECTORY_STRUCTURE_CRITICAL';
                 error.details = analysis;
+                throw error;
+            }
+        });
+
+        // console.log使用の検証
+        this.test('Console logging usage', async (config) => {
+            // プロファイル設定でスキップする場合
+            if (config.skipTests && config.skipTests.includes('No console.log usage')) {
+                console.log('   ⏭️  Skipped (profile setting)');
+                return;
+            }
+            
+            const consoleAnalyzer = new ConsoleAnalyzer(config);
+            const allFiles = await this.getAllFiles();
+            const jsFiles = allFiles.filter(file => file.endsWith('.js'));
+            
+            const results = [];
+            let totalConsoleUsage = 0;
+            
+            for (const file of jsFiles) {
+                const content = await this.loadFile(file);
+                const result = consoleAnalyzer.analyze(content, file);
+                
+                if (result.count > 0) {
+                    results.push({
+                        file,
+                        ...result
+                    });
+                    totalConsoleUsage += result.count;
+                }
+            }
+            
+            // サマリー生成
+            const summary = consoleAnalyzer.generateSummary(results);
+            
+            // 結果の表示
+            if (totalConsoleUsage > 0) {
+                console.log(`   📊 Console usage analysis:`);
+                console.log(`      - Total console calls: ${totalConsoleUsage}`);
+                
+                // ファイルタイプ別の表示
+                Object.entries(summary.byFileType).forEach(([fileType, data]) => {
+                    console.log(`      - ${fileType}: ${data.count} calls in ${data.files} files`);
+                });
+                
+                // 閾値を超えているファイルの表示
+                const exceededFiles = results.filter(r => r.exceeds);
+                if (exceededFiles.length > 0) {
+                    console.warn(`   ⚠️  Files exceeding console usage threshold:`);
+                    exceededFiles.forEach(result => {
+                        console.warn(`      - ${result.file}: ${result.count} calls (threshold: ${result.threshold})`);
+                        if (result.details.hasDebugComments) {
+                            console.log(`        💡 Contains debug comments - consider removing for production`);
+                        }
+                    });
+                }
+                
+                // 提案の表示
+                if (summary.suggestions.length > 0) {
+                    console.log(`   💡 Recommendations:`);
+                    summary.suggestions.forEach(suggestion => {
+                        console.log(`      - ${suggestion}`);
+                    });
+                }
+            }
+            
+            // クリティカルな問題がある場合
+            const criticalResults = results.filter(r => r.severity === 'critical');
+            if (criticalResults.length > 0) {
+                const error = new Error(`Excessive console usage detected in ${criticalResults.length} files`);
+                error.code = 'CONSOLE_USAGE_CRITICAL';
+                error.details = results;
                 throw error;
             }
         });

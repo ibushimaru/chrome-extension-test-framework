@@ -109,6 +109,13 @@ module.exports = {
     // 詳細なログ出力
     verbose: false,
     
+    // console.log使用の閾値設定 (v1.9.0+)
+    consoleThresholds: {
+        development: 100,   // 開発ファイルでは100個まで許容
+        production: 10,     // 本番コードでは10個まで  
+        test: Infinity      // テストファイルでは無制限
+    },
+    
     // カスタムバリデーター
     validators: {
         // 例: バージョン番号の形式チェック
