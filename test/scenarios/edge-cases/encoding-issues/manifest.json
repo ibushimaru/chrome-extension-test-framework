@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "エンコーディングテスト",
+    "version": "1.0.0",
+    "description": "様々なエンコーディングのテスト 🌍 🎨 🚀",
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "js": ["utf8-with-bom.js", "mixed-encoding.js"]
+    }]
+}

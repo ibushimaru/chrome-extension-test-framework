@@ -1,0 +1,13 @@
+{
+    "manifest_version": 3,
+    "name": "Circular Dependencies Test",
+    "version": "1.0.0",
+    "description": "Extension with circular script dependencies",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "js": ["moduleA.js", "moduleB.js", "moduleC.js"]
+    }]
+}

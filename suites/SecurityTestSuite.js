@@ -6,6 +6,7 @@ const TestSuite = require('../lib/TestSuite');
 const fs = require('fs');
 const path = require('path');
 const SecurityAnalyzer = require('../lib/SecurityAnalyzer');
+const StorageAnalyzer = require('../lib/StorageAnalyzer');
 
 class SecurityTestSuite extends TestSuite {
     constructor(config) {
@@ -337,6 +338,53 @@ class SecurityTestSuite extends TestSuite {
             
             if (issues.length > 0) {
                 throw new Error(`Insecure storage detected:\n   ${issues.join('\n   ')}`);
+            }
+        });
+
+        // Chrome Storage APIの使用パターン検証
+        this.test('Chrome storage API usage patterns', async (config) => {
+            const analyzer = new StorageAnalyzer();
+            const results = await analyzer.analyze(config.extensionPath);
+            
+            // 結果の表示
+            if (results.summary.deprecatedStorageUsage > 0) {
+                console.warn(`   ⚠️  Deprecated storage APIs detected: ${results.summary.deprecatedStorageUsage} occurrences`);
+                
+                // localStorage使用の詳細
+                if (results.usage.localStorage.length > 0) {
+                    console.warn(`   📦 localStorage usage in ${results.usage.localStorage.length} files`);
+                    results.usage.localStorage.forEach(item => {
+                        console.warn(`      - ${item.file}: ${item.occurrences} occurrences`);
+                    });
+                }
+                
+                // sessionStorage使用の詳細
+                if (results.usage.sessionStorage.length > 0) {
+                    console.warn(`   📦 sessionStorage usage in ${results.usage.sessionStorage.length} files`);
+                    results.usage.sessionStorage.forEach(item => {
+                        console.warn(`      - ${item.file}: ${item.occurrences} occurrences`);
+                    });
+                }
+            }
+            
+            // chrome.storage使用状況
+            if (results.summary.chromeStorageUsage > 0) {
+                console.log(`   ✅ chrome.storage API usage: ${results.summary.chromeStorageUsage} calls`);
+            }
+            
+            // 重大な問題がある場合はエラー
+            const criticalIssues = results.issues.filter(issue => issue.severity === 'error');
+            if (criticalIssues.length > 0) {
+                throw new Error(`Critical storage issues found:\n   ${criticalIssues.map(i => i.message).join('\n   ')}`);
+            }
+            
+            // 推奨事項の表示
+            if (results.summary.recommendations.length > 0) {
+                results.summary.recommendations.forEach(rec => {
+                    if (rec.priority === 'high') {
+                        console.warn(`   💡 ${rec.message}`);
+                    }
+                });
             }
         });
     }

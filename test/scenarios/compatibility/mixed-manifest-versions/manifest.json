@@ -1,0 +1,33 @@
+{
+    "manifest_version": 3,
+    "name": "Mixed Manifest Version Extension",
+    "version": "1.0.0",
+    "description": "Extension with mixed V2/V3 features",
+    "background": {
+        "service_worker": "background.js",
+        "persistent": false
+    },
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "browser_action": {
+        "default_title": "Legacy browser action"
+    },
+    "permissions": [
+        "tabs",
+        "storage",
+        "webRequest",
+        "webRequestBlocking",
+        "<all_urls>"
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+    },
+    "web_accessible_resources": [
+        "images/*",
+        {
+            "resources": ["data/*"],
+            "matches": ["<all_urls>"]
+        }
+    ]
+}

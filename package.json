@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-test-framework",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Universal testing framework for Chrome extensions - Fast static analysis without browser dependencies",
   "main": "index.js",
   "bin": {
@@ -30,7 +30,17 @@
     "chrome",
     "extension-validator",
     "quality-assurance",
-    "ci-cd"
+    "ci-cd",
+    "security-analysis",
+    "performance-testing",
+    "auto-fix",
+    "watch-mode",
+    "parallel-testing",
+    "incremental-testing",
+    "i18n-validation",
+    "file-validation",
+    "chrome-storage",
+    "declarative-net-request"
   ],
   "author": "ibushimaru",
   "license": "MIT",

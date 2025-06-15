@@ -1,0 +1,6 @@
+{
+    "manifest_version": 3,
+    "name": "Timeout Test Extension",
+    "version": "1.0.0",
+    "description": "Tests timeout error handling"
+}

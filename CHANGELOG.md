@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2025-06-15
+
+### Added
+- **PermissionsAnalyzer**: Detailed permission analysis with specific descriptions
+  - Shows exactly which permissions are sensitive and why
+  - Provides recommendations for permission usage
+  - Categorizes permissions by risk level (high, moderate, low)
+- **CodeComplexityAnalyzer**: More accurate code complexity detection
+  - Fixed false positives in nested loop detection
+  - Analyzes cyclomatic complexity
+  - Detects overly long functions
+- **Enhanced Profile System**: Meaningful differences between profiles
+  - development: Skips certain tests, relaxed rules
+  - production: Strict validation, all tests enabled
+  - quick: Fast subset of tests for pre-commit hooks
+- **--show-config option**: Display current configuration and exclude patterns
+
+### Changed
+- ExcludeManager now properly uses extensionPath as base for relative paths
+- FileNameValidator and DirectoryAnalyzer now use ExcludeManager for consistency
+- Profile system now includes skipTests functionality
+- Improved permissions validation with detailed explanations
+
+### Fixed
+- Configuration file (.cextrc.json) exclude patterns now work correctly
+- Fixed false positives in triple nested loops detection
+- Profile functionality now has meaningful differences
+- Exclude patterns from config files are properly merged with defaults
+
 ## [1.8.0] - 2025-06-15
 
 ### Added

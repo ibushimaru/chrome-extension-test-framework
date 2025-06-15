@@ -1,0 +1,7 @@
+{
+  "exclude": [
+    "test/**",
+    "docs/**",
+    "*.test.js"
+  ]
+}

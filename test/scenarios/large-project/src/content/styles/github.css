@@ -1,0 +1,18 @@
+/* github.css */
+.github-container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.github-header {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .github-container {
+        padding: 10px;
+    }
+}

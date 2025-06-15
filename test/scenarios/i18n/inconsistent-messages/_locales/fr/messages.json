@@ -1,0 +1,19 @@
+{
+    "extensionName": {
+        "message": "Test de Messages Incohérents"
+    },
+    "extensionDescription": {
+        "message": "Extension de test pour la localisation incohérente"
+    },
+    // actionTitle が欠落している
+    "welcomeMessage": {
+        "message": "Bienvenue dans notre extension!"
+    },
+    "settingsTitle": {
+        "message": "Paramètres"
+    },
+    "extraMessage": {
+        "message": "Message supplémentaire uniquement en français",
+        "description": "Ce message n'existe que dans la version française"
+    }
+}

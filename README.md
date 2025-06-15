@@ -17,6 +17,13 @@
 - 🔧 **CI/CD対応** - 終了コードによる自動化サポート
 - 💡 **詳細なエラーメッセージ** - エラーコード、修正提案、コード例、ドキュメントリンク付き (v1.2.0+)
 - 🔧 **自動修正機能** - 一般的な問題を自動的に修正 (v1.3.0+)
+- 👀 **ウォッチモード** - ファイル変更時の自動テスト (v1.4.0+)
+- ⚡ **並列実行** - 複数のテストスイートを並列で実行 (v1.4.0+)
+- 📋 **プロファイル機能** - 事前定義された設定セットの利用 (v1.5.0+)
+- 🔄 **インクリメンタルテスト** - 変更されたファイルのみテスト (v1.5.0+)
+- 🛡️ **高度なセキュリティ分析** - APIキー検出、安全でないストレージ検出 (v1.7.0+)
+- 📈 **パフォーマンス分析** - メモリリーク、重い処理、DOM操作の検出 (v1.8.0+)
+- ✅ **Manifest V3完全対応** - 最新のChrome拡張機能仕様に準拠 (v1.8.0+)
 
 ## インストール
 
@@ -85,6 +92,32 @@ cext-test --fix
 
 # 修正内容をプレビュー（実際には変更しない）
 cext-test --fix-dry-run
+
+# ウォッチモード（ファイル変更時に自動実行）
+cext-test --watch
+
+# 並列実行（高速化）
+cext-test --parallel
+
+# 変更されたファイルのみテスト
+cext-test --changed
+
+# プロファイルを使用 (v1.9.0+)
+cext-test --profile development  # 開発用（緩いルール）
+cext-test --profile production   # 本番用（厳しいルール）  
+cext-test --profile quick        # 高速チェック
+
+# 現在の設定を表示 (v1.9.0+)
+cext-test --show-config
+
+# 詳細モード
+cext-test --verbose
+
+# プログレス表示を無効化
+cext-test --no-progress
+
+# ヘルプを表示
+cext-test --help
 ```
 
 ### プログラムとして使用
@@ -181,40 +214,69 @@ $ cext-test samples/broken-extension --fix
 
 ## ビルトインテストスイート
 
-### 1. Manifest Validation
-- Manifest V3準拠チェック
-- 必須フィールドの存在確認
-- バージョン形式の検証
-- アイコンファイルの存在確認
-- Service Worker設定の検証
+### 1. Manifest Validation (強化版)
+- ✅ Manifest V3準拠チェック
+- ✅ 必須フィールドの存在確認
+- ✅ バージョン形式の検証
+- ✅ アイコンファイルの存在確認
+- ✅ Service Worker設定の検証
+- 🆕 chrome.action API検証（browser_action廃止警告）
+- 🆕 Declarative Net Request API検証
+- 🆕 chrome.scripting API検証（executeScript/insertCSS廃止警告）
+- 🆕 最小Chromeバージョン検証（v88以上推奨）
 
-### 2. Security Validation
-- CSP（Content Security Policy）の検証
-- 外部スクリプトの検出
-- eval()使用の検出
-- HTTPS強制の確認
-- 最小権限の原則チェック
+### 2. Security Validation (v1.7.0で大幅強化)
+- ✅ CSP（Content Security Policy）の検証
+- ✅ 外部スクリプトの検出
+- ✅ eval()使用の検出
+- ✅ HTTPS強制の確認
+- ✅ 最小権限の原則チェック
+- 🆕 **詳細な権限分析** (v1.9.0+)
+  - 各権限の具体的な説明を表示
+  - 危険度レベルで分類（high/moderate/low）
+  - 権限使用の推奨事項を提示
+- 🆕 **高度なセキュリティ分析** (SecurityAnalyzer)
+  - APIキー・シークレットの検出（30種類以上のパターン）
+  - 安全でないストレージパターン検出
+  - 危険なJavaScriptパターン検出（eval、Function構造体）
+  - XSS脆弱性検出
+  - 安全でない通信パターン検出
+- 🆕 **Chrome Storage API使用分析** (StorageAnalyzer)
+  - localStorage/sessionStorage使用警告
+  - chrome.storage APIへの移行提案
 
-### 3. Performance Validation
-- ファイルサイズの制限チェック
-- 画像最適化の確認
-- JavaScript/CSSの最適化
-- メモリリークの潜在的リスク検出
-- アニメーションパフォーマンス
+### 3. Performance Validation (v1.8.0で大幅強化)
+- ✅ ファイルサイズの制限チェック
+- ✅ 画像最適化の確認
+- ✅ JavaScript/CSSの最適化
+- ✅ アニメーションパフォーマンス
+- 🆕 **包括的なパフォーマンス分析** (PerformanceAnalyzer)
+  - メモリリークパターン検出（15種類以上）
+  - 重い計算処理検出（ネストループ、再帰）
+  - 過剰なDOM操作検出
+  - バンドルサイズと最適化分析
+  - CSSパフォーマンス問題検出
+  - 重複コード検出
 
-### 4. Structure Validation
-- ディレクトリ構造の検証
-- ファイル命名規則
-- 開発用ファイルの除外確認
-- モジュール構造の検証
-- 重複ファイルの検出
+### 4. Structure Validation (v1.6.0で強化)
+- ✅ ディレクトリ構造の検証
+- ✅ ファイル命名規則
+- ✅ 開発用ファイルの除外確認
+- ✅ モジュール構造の検証
+- ✅ 重複ファイルの検出
+- 🆕 **ファイル検証の強化**
+  - FileSizeAnalyzer: 個別ファイル・拡張子別のサイズ分析
+  - FileNameValidator: プラットフォーム互換性、特殊文字検出
+  - DirectoryAnalyzer: ディレクトリ深度・複雑度分析
 
 ### 5. Localization Validation
-- 多言語対応の構造確認
-- messages.jsonの形式検証
-- ロケール間の一貫性チェック
-- RTL言語サポートの確認
-- 国際化APIの使用状況
+- ✅ 多言語対応の構造確認
+- ✅ messages.jsonの形式検証
+- ✅ ロケール間の一貫性チェック
+- ✅ RTL言語サポートの確認
+- ✅ 国際化APIの使用状況
+- 🆕 ハードコードされたテキストの検出
+- 🆕 プレースホルダー使用の検証
 
 ## カスタムテストの作成
 
@@ -289,11 +351,96 @@ module.exports = {
         icons: true,
         locales: true
     },
+    // 除外パターン (v1.9.0+)
+    exclude: [
+        'test/**',
+        'docs/**',
+        '*.test.js'
+    ],
+    // プロファイル設定 (v1.9.0+)
+    profile: 'development',
     rules: [
         // カスタムルール
     ],
     timeout: 30000
 };
+```
+
+## 高度な機能
+
+### ウォッチモード (v1.4.0+)
+ファイル変更を監視し、自動的にテストを再実行します。
+
+```bash
+# ウォッチモードで起動
+cext-test --watch
+
+# 特定のディレクトリのみ監視
+cext-test --watch --watch-dirs src,manifest.json
+```
+
+### 並列実行 (v1.4.0+)
+複数のテストスイートを並列で実行し、テスト時間を短縮します。
+
+```bash
+# 並列実行（CPUコア数に基づく最適化）
+cext-test --parallel
+
+# ワーカー数を指定
+cext-test --parallel --max-workers 4
+```
+
+### プロファイル機能 (v1.5.0+)
+事前定義された設定セットを使用して、特定の観点でテストを実行します。
+
+```bash
+# セキュリティ重視のテスト
+cext-test --profile security-focused
+
+# パフォーマンス重視のテスト
+cext-test --profile performance
+
+# 最小限のテスト
+cext-test --profile minimal
+
+# CI/CD向け設定
+cext-test --profile ci
+```
+
+### インクリメンタルテスト (v1.5.0+)
+前回のテスト以降に変更されたファイルのみをテストします。
+
+```bash
+# 変更されたファイルのみテスト
+cext-test --changed
+
+# 特定のコミット以降の変更をテスト
+cext-test --changed --since HEAD~3
+```
+
+## テストシナリオ
+フレームワークには40以上の実践的なテストシナリオが含まれています：
+
+```bash
+# エッジケースのテスト
+cext-test test/scenarios/edge-cases/broken-manifest
+cext-test test/scenarios/edge-cases/circular-dependencies
+
+# セキュリティ問題のテスト
+cext-test test/scenarios/security/api-keys
+cext-test test/scenarios/security/eval-usage
+
+# パフォーマンス問題のテスト
+cext-test test/scenarios/performance/memory-leaks
+cext-test test/scenarios/performance/large-dom
+
+# 国際化のテスト
+cext-test test/scenarios/i18n/missing-messages
+cext-test test/scenarios/i18n/rtl-support
+
+# Manifest V3互換性
+cext-test test/scenarios/manifest-v3/deprecated-apis
+cext-test test/scenarios/manifest-v3/modern-apis
 ```
 
 ## CI/CD統合
@@ -305,6 +452,12 @@ module.exports = {
   run: |
     npm install chrome-extension-test-framework
     npx cext-test ./extension -o json
+    
+- name: Test with Security Focus
+  run: npx cext-test ./extension --profile security-focused
+  
+- name: Run Parallel Tests
+  run: npx cext-test ./extension --parallel -o json,html
 ```
 
 ### GitLab CI
@@ -317,6 +470,12 @@ test:
   artifacts:
     paths:
       - test-results/
+      
+security-test:
+  script:
+    - npx cext-test ./extension --profile security-focused
+  only:
+    - merge_requests
 ```
 
 ## API リファレンス
@@ -363,6 +522,61 @@ A: いいえ、このフレームワークは静的解析に特化していま�
 ### Q: カスタムルールを追加するには？
 A: `addValidator`メソッドを使用するか、カスタムTestSuiteクラスを作成してください。
 
+### Q: テストが遅い場合は？
+A: `--parallel`オプションを使用して並列実行を有効にするか、`--changed`オプションで変更されたファイルのみをテストしてください。
+
+### Q: 特定の警告を無視したい場合は？
+A: `.cextignore`ファイルを作成し、除外したいファイルやディレクトリを指定してください。
+
+## バージョン履歴
+
+### v1.9.0 (2025-06-15)
+- 🆕 PermissionsAnalyzer: 詳細な権限分析と説明
+- 🆕 CodeComplexityAnalyzer: 正確なネストループ検出
+- 🆕 プロファイル機能の改善（意味のある違いを実装）
+- 🆕 --show-configオプション
+- 🔧 設定ファイルのexcludeパターンが正しく動作するよう修正
+- 🔧 Triple nested loopsの誤検出を修正
+
+### v1.8.0 (2025-06-15)
+- 🆕 PerformanceAnalyzer: 包括的なパフォーマンス分析
+- 🆕 Manifest V3完全対応（chrome.action、declarativeNetRequest）
+- 🆕 StorageAnalyzer: 非推奨ストレージAPI検出
+
+### v1.7.0 (2025-06-15)
+- 🆕 SecurityAnalyzer: 高度なセキュリティ脆弱性検出
+- 🆕 APIキー・シークレット検出（30種類以上のパターン）
+
+### v1.6.0 (2025-06-15)
+- 🆕 FileSizeAnalyzer: 詳細なファイルサイズ分析
+- 🆕 FileNameValidator: プラットフォーム互換性チェック
+- 🆕 DirectoryAnalyzer: ディレクトリ構造分析
+
+### v1.5.0 (2025-06-15)
+- 🆕 プロファイル機能
+- 🆕 インクリメンタルテスト
+- 🆕 設定ファイルサポート強化
+
+### v1.4.0 (2025-06-15)
+- 🆕 ウォッチモード
+- 🆕 並列実行
+- 🆕 プログレスバー表示
+
+### v1.3.0 (2025-06-15)
+- 🆕 自動修正機能（--fix）
+- 🆕 ドライラン機能（--fix-dry-run）
+
+### v1.2.0 (2025-06-15)
+- 🆕 詳細なエラーメッセージ
+- 🆕 ErrorHandlerクラス
+
+### v1.1.0 (2025-06-15)
+- 🆕 プログレス表示機能
+- 🆕 verboseオプション
+
+### v1.0.0 (2025-06-14)
+- 🎉 初回リリース
+
 ## ライセンス
 
 MIT
@@ -370,3 +584,10 @@ MIT
 ## 貢献
 
 プルリクエストを歓迎します。大きな変更の場合は、まずissueを作成して変更内容を議論してください。
+
+## 関連リンク
+
+- [GitHub リポジトリ](https://github.com/ibushimaru/chrome-extension-test-framework)
+- [npm パッケージ](https://www.npmjs.com/package/chrome-extension-test-framework)
+- [Chrome Extensions Documentation](https://developer.chrome.com/docs/extensions/)
+- [Manifest V3 Migration Guide](https://developer.chrome.com/docs/extensions/mv3/intro/mv3-migration/)

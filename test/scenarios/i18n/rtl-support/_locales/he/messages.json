@@ -1,0 +1,14 @@
+{
+    "extensionName": {
+        "message": "בדיקת תמיכה ב-RTL"
+    },
+    "extensionDescription": {
+        "message": "בדיקת תמיכה בשפות מימין לשמאל"
+    },
+    "actionTitle": {
+        "message": "פתח חלון קופץ"
+    },
+    "direction": {
+        "message": "rtl"
+    }
+}

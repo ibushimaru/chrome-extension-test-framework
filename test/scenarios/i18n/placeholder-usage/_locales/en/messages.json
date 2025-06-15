@@ -1,0 +1,34 @@
+{
+    "extensionName": {
+        "message": "Placeholder Test"
+    },
+    "extensionDescription": {
+        "message": "Testing placeholder functionality in i18n"
+    },
+    "welcomeUser": {
+        "message": "Welcome $USER$!",
+        "placeholders": {
+            "user": {
+                "content": "$1",
+                "example": "John"
+            }
+        }
+    },
+    "itemCount": {
+        "message": "You have $COUNT$ $ITEM$",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "5"
+            },
+            "item": {
+                "content": "$2",
+                "example": "messages"
+            }
+        }
+    },
+    "invalidPlaceholder": {
+        "message": "Missing placeholder $MISSING$"
+        // プレースホルダー定義が欠落
+    }
+}

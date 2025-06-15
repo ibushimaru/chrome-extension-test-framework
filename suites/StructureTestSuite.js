@@ -54,7 +54,8 @@ class StructureTestSuite extends TestSuite {
         this.test('File naming conventions', async (config) => {
             const fileValidator = new FileNameValidator({
                 checkPlatformCompatibility: true,
-                autoFixSuggestions: true
+                autoFixSuggestions: true,
+                excludeManager: this.config.excludeManager
             });
             
             const results = await fileValidator.validateDirectory(config.extensionPath);
@@ -292,7 +293,8 @@ class StructureTestSuite extends TestSuite {
             const analyzer = new DirectoryAnalyzer({
                 maxDepth: 5,
                 maxPathLength: 260,
-                maxFilesPerDirectory: 50
+                maxFilesPerDirectory: 50,
+                excludeManager: this.config.excludeManager
             });
             
             const analysis = await analyzer.analyze(config.extensionPath);

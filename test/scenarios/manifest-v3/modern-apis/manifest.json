@@ -1,0 +1,35 @@
+{
+    "manifest_version": 3,
+    "name": "Modern APIs Test",
+    "version": "1.0.0",
+    "description": "Tests for modern Manifest V3 APIs",
+    "minimum_chrome_version": "88",
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icons/icon-16.png",
+            "24": "icons/icon-24.png",
+            "32": "icons/icon-32.png"
+        },
+        "default_title": "Modern Extension"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "permissions": [
+        "scripting",
+        "storage",
+        "activeTab",
+        "declarativeNetRequest"
+    ],
+    "host_permissions": [
+        "https://*.example.com/*"
+    ],
+    "declarative_net_request": {
+        "rule_resources": [{
+            "id": "ruleset_1",
+            "enabled": true,
+            "path": "rules.json"
+        }]
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "manifest_version": 3,
+    "name": "Invalid JSON Test",
+    "version": "1.0.0",
+    "description": "Tests error handling for invalid JSON files"
+    "background": {
+        "service_worker": "background.js"
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "manifest_version": 3,
+    "name": "Broken Manifest Test",
+    "version": "1.0.0"
+    // 意図的にカンマが抜けている
+    "description": "This manifest has syntax errors"
+}

@@ -1,0 +1,14 @@
+{
+    "extensionName": {
+        "message": "RTL Support Test"
+    },
+    "extensionDescription": {
+        "message": "Testing right-to-left language support"
+    },
+    "actionTitle": {
+        "message": "Open popup"
+    },
+    "direction": {
+        "message": "ltr"
+    }
+}

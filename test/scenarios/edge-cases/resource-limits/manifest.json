@@ -1,0 +1,9 @@
+{
+    "manifest_version": 3,
+    "name": "Resource Limits Test",
+    "version": "1.0.0",
+    "description": "Extension testing resource limits",
+    "background": {
+        "service_worker": "large-file.js"
+    }
+}

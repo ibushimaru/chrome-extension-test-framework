@@ -1,5 +1,5 @@
 # Development files
-test/
+test/**/*
 test-*.js
 samples/
 .github/

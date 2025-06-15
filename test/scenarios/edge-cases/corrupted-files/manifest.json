@@ -1,0 +1,13 @@
+{
+    "manifest_version": 3,
+    "name": "Corrupted Files Test",
+    "version": "1.0.0",
+    "description": "Extension with corrupted and zero-byte files",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "js": ["zero-byte.js", "binary.js"]
+    }]
+}

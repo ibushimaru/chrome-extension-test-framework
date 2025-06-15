@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "name": "File Not Found Test",
+    "version": "1.0.0",
+    "description": "Tests error handling for missing files",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "js": ["missing-content.js"]
+    }],
+    "icons": {
+        "16": "icons/missing-icon.png"
+    }
+}

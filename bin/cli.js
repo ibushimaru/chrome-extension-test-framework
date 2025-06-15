@@ -35,7 +35,9 @@ const options = {
     failOnError: false,
     changed: false,
     sinceLastRun: false,
-    clearCache: false
+    clearCache: false,
+    noVersionCheck: false,
+    showConfig: false
 };
 
 // 引数を解析
@@ -136,6 +138,14 @@ for (let i = 0; i < args.length; i++) {
             options.clearCache = true;
             break;
             
+        case '--no-version-check':
+            options.noVersionCheck = true;
+            break;
+            
+        case '--show-config':
+            options.showConfig = true;
+            break;
+            
         default:
             if (!arg.startsWith('-')) {
                 options.extensionPath = path.resolve(arg);
@@ -172,6 +182,8 @@ Options:
   --changed               Test only changed files (requires git)
   --since-last-run        Test only files changed since last run
   --clear-cache           Clear the test cache
+  --no-version-check      Disable update notifications
+  --show-config           Show the current configuration and exit
 
 Test Suites:
   manifest      - Validate manifest.json
@@ -303,6 +315,22 @@ async function runTests() {
             framework.applyProfile(options.profile);
         }
         
+        // --show-configオプションの処理
+        if (options.showConfig) {
+            console.log('📄 Current Configuration:');
+            console.log(JSON.stringify(framework.config, null, 2));
+            
+            if (framework.config.profile) {
+                console.log('\n📝 Active Profile:', framework.config.profile.name);
+                console.log('   Description:', framework.config.profile.description);
+            }
+            
+            console.log('\n🔍 Exclude Patterns:');
+            console.log(framework.excludeManager.getPatterns());
+            
+            process.exit(0);
+        }
+        
         // キャッシュクリアオプション
         if (options.clearCache) {
             console.log('🗑️  Clearing test cache...');
@@ -353,7 +381,11 @@ async function runTests() {
             options.suites.forEach(suiteName => {
                 const Suite = suiteMap[suiteName.toLowerCase()];
                 if (Suite) {
-                    framework.addSuite(new Suite(framework.config));
+                    const suiteConfig = {
+                        ...framework.config,
+                        excludeManager: framework.excludeManager
+                    };
+                    framework.addSuite(new Suite(suiteConfig));
                 } else {
                     console.warn(`⚠️  Unknown test suite: ${suiteName}`);
                 }

@@ -14,6 +14,7 @@ const ExcludeManager = require('./lib/ExcludeManager');
 const WarningManager = require('./lib/WarningManager');
 const ProfileManager = require('./lib/ProfileManager');
 const IncrementalTester = require('./lib/IncrementalTester');
+const VersionChecker = require('./lib/VersionChecker');
 
 // フレームワークのバージョン
 const VERSION = '1.8.0';
@@ -121,7 +122,14 @@ class ChromeExtensionTestFramework {
             this.suites.push(suite);
         } else if (typeof suite === 'object') {
             // オブジェクトからTestSuiteを作成
-            this.suites.push(new TestSuite(suite));
+            const suiteOptions = {
+                ...suite,
+                config: {
+                    ...suite.config,
+                    excludeManager: this.excludeManager
+                }
+            };
+            this.suites.push(new TestSuite(suiteOptions));
         }
         return this;
     }
@@ -139,7 +147,11 @@ class ChromeExtensionTestFramework {
         ];
 
         builtinSuites.forEach(Suite => {
-            this.addSuite(new Suite(this.config));
+            const suiteConfig = {
+                ...this.config,
+                excludeManager: this.excludeManager
+            };
+            this.addSuite(new Suite(suiteConfig));
         });
 
         return this;
@@ -178,6 +190,12 @@ class ChromeExtensionTestFramework {
      */
     async run() {
         const startTime = Date.now();
+        
+        // バージョンチェック（--no-version-checkで無効化可能）
+        if (!this.config.noVersionCheck) {
+            const versionChecker = new VersionChecker();
+            await versionChecker.checkAndNotify();
+        }
         
         // 並列実行の判定
         if (this.config.parallel && this.suites.length > 1) {

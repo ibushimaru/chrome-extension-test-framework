@@ -1,0 +1,22 @@
+{
+    "extensionName": {
+        "message": "Inconsistent Messages Test",
+        "description": "Extension name"
+    },
+    "extensionDescription": {
+        "message": "Test extension for inconsistent localization",
+        "description": "Extension description"
+    },
+    "actionTitle": {
+        "message": "Click me",
+        "description": "Action button title"
+    },
+    "welcomeMessage": {
+        "message": "Welcome to our extension!",
+        "description": "Welcome message"
+    },
+    "settingsTitle": {
+        "message": "Settings",
+        "description": "Settings page title"
+    }
+}

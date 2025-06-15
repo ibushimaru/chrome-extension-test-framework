@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Popup</title>
+    <link rel="stylesheet" href="popup.css">
+    <link rel="stylesheet" href="../../assets/fonts/fonts.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="../../assets/icons/icon-48.png" alt="Logo">
+            <h1 data-i18n="popupTitle">Extension Name</h1>
+        </header>
+        
+        <main>
+            <section class="status-section">
+                <h2 data-i18n="statusTitle">Status</h2>
+                <div class="status-indicator" id="status">
+                    <span class="status-dot"></span>
+                    <span data-i18n="statusActive">Active</span>
+                </div>
+            </section>
+            
+            <section class="actions-section">
+                <button id="toggleBtn" class="btn btn-primary" data-i18n="toggleButton">
+                    Toggle Feature
+                </button>
+                <button id="settingsBtn" class="btn btn-secondary" data-i18n="settingsButton">
+                    Settings
+                </button>
+            </section>
+            
+            <section class="stats-section">
+                <h2 data-i18n="statsTitle">Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="totalCount">0</span>
+                        <span class="stat-label" data-i18n="totalLabel">Total</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="todayCount">0</span>
+                        <span class="stat-label" data-i18n="todayLabel">Today</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <a href="#" id="helpLink" data-i18n="helpLink">Help</a>
+            <span class="version">v2.5.0</span>
+        </footer>
+    </div>
+    
+    <script src="../common/utils/i18n.js"></script>
+    <script src="popup.js" type="module"></script>
+</body>
+</html>

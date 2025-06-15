@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "priority": 1,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "*://example.com/ads/*",
+            "resourceTypes": ["script", "image"]
+        }
+    },
+    {
+        "id": 2,
+        "priority": 2,
+        "action": {
+            "type": "redirect",
+            "redirect": {
+                "url": "https://example.com/blocked.html"
+            }
+        },
+        "condition": {
+            "urlFilter": "*://malicious.com/*",
+            "resourceTypes": ["main_frame"]
+        }
+    }
+]
