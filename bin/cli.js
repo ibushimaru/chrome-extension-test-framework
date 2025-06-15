@@ -77,6 +77,14 @@ for (let i = 0; i < args.length; i++) {
             options.watch = true;
             break;
             
+        case '--no-progress':
+            options.progress = false;
+            break;
+            
+        case '--verbose':
+            options.verbose = true;
+            break;
+            
         default:
             if (!arg.startsWith('-')) {
                 options.extensionPath = path.resolve(arg);
@@ -101,6 +109,8 @@ Options:
   -s, --suites <suites>   Test suites to run (comma-separated or 'all')
   --parallel              Run tests in parallel
   -w, --watch             Watch mode - re-run tests on file changes
+  --no-progress           Disable progress display
+  --verbose               Show detailed progress information
 
 Test Suites:
   manifest      - Validate manifest.json

@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-06-15
+
+### Added
+- Progress display during test execution
+- `--verbose` flag for detailed progress information with progress bars
+- `--no-progress` flag to disable progress display
+- Real-time test status updates
+- Suite completion statistics
+- Total execution time display
+- ProgressReporter class for managing progress output
+
+### Changed
+- TestRunner now integrates with ProgressReporter
+- Improved console output formatting
+- Better visual feedback during test runs
+
+## [1.0.1] - 2025-06-15
+
+### Added
+- npm package publication support
+- Improved package.json configuration for npm registry
+- .npmignore file for cleaner package distribution
+- Updated README with npm installation instructions
+- Sample Chrome extensions for testing and demonstration
+- CI/CD workflow improvements
+
+### Fixed
+- Fixed regex error in LocalizationTestSuite
+- Fixed CLI permissions issue in postinstall script
+- Fixed test framework to use sample extensions instead of parent directory
+
+### Changed
+- Updated version to 1.0.1
+- Enhanced documentation for npm users
+
 ## [1.0.0] - 2024-06-14
 
 ### Added
@@ -45,5 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/yourusername/chrome-extension-test-framework/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/yourusername/chrome-extension-test-framework/releases/tag/v1.0.0
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/ibushimaru/chrome-extension-test-framework/releases/tag/v1.0.0

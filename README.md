@@ -1,5 +1,10 @@
 # Chrome Extension Test Framework
 
+[![npm version](https://badge.fury.io/js/chrome-extension-test-framework.svg)](https://www.npmjs.com/package/chrome-extension-test-framework)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub issues](https://img.shields.io/github/issues/ibushimaru/chrome-extension-test-framework)](https://github.com/ibushimaru/chrome-extension-test-framework/issues)
+[![GitHub stars](https://img.shields.io/github/stars/ibushimaru/chrome-extension-test-framework)](https://github.com/ibushimaru/chrome-extension-test-framework/stargazers)
+
 汎用的なChrome拡張機能テストフレームワーク - ブラウザ不要で高速な静的解析を実行
 
 ## 特徴
@@ -13,14 +18,25 @@
 
 ## インストール
 
-### ローカルインストール
+### npmからインストール（推奨）
 ```bash
-npm install /path/to/chrome-extension-test-framework
+# ローカルインストール
+npm install chrome-extension-test-framework
+
+# グローバルインストール
+npm install -g chrome-extension-test-framework
+
+# 開発依存としてインストール
+npm install --save-dev chrome-extension-test-framework
 ```
 
-### グローバルインストール
+### GitHubからインストール
 ```bash
-npm install -g /path/to/chrome-extension-test-framework
+# 最新版をインストール
+npm install git+https://github.com/ibushimaru/chrome-extension-test-framework.git
+
+# 特定のバージョンをインストール
+npm install git+https://github.com/ibushimaru/chrome-extension-test-framework.git#v1.0.1
 ```
 
 ## クイックスタート

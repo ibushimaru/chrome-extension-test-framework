@@ -133,10 +133,11 @@ class ChromeExtensionTestFramework {
      * テストを実行
      */
     async run() {
-        console.log(`🚀 Chrome Extension Test Framework v${VERSION}`);
-        console.log(`📁 Testing: ${this.config.extensionPath}\n`);
-
         const startTime = Date.now();
+        
+        // プログレス表示の開始
+        const totalTests = this.suites.reduce((sum, suite) => sum + suite.tests.length, 0);
+        this.testRunner.progressReporter.start(this.suites.length, totalTests);
         const results = {
             framework: VERSION,
             timestamp: new Date().toISOString(),
@@ -154,6 +155,9 @@ class ChromeExtensionTestFramework {
             // 結果を集計
             results.summary = this.calculateSummary(results.suites);
             results.duration = Date.now() - startTime;
+
+            // プログレス表示の完了
+            this.testRunner.progressReporter.complete(results.summary);
 
             // レポートを生成
             await this.reporter.generate(results);

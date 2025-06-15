@@ -9,8 +9,8 @@ async function testFramework() {
     console.log('🧪 Testing Chrome Extension Test Framework...\n');
     
     try {
-        // 親ディレクトリの拡張機能をテスト
-        const extensionPath = path.join(__dirname, '..', '..');
+        // サンプルの拡張機能をテスト（good-extensionを使用）
+        const extensionPath = path.join(__dirname, '..', 'samples', 'good-extension');
         
         // フレームワークのインスタンスを作成
         const framework = new ChromeExtensionTestFramework({
@@ -35,6 +35,7 @@ async function testFramework() {
         
     } catch (error) {
         console.error('❌ Framework test failed:', error.message);
+        console.error('Stack trace:', error.stack);
         process.exit(1);
     }
 }
