@@ -13,7 +13,8 @@ class SecurityTestSuite extends TestSuite {
     constructor(config) {
         super({
             name: 'Security Validation',
-            description: 'Chrome拡張機能のセキュリティ要件を検証'
+            description: 'Chrome拡張機能のセキュリティ要件を検証',
+            config: config
         });
 
         this.config = config;

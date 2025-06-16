@@ -12,7 +12,8 @@ class PerformanceTestSuite extends TestSuite {
     constructor(config) {
         super({
             name: 'Performance Validation',
-            description: 'Chrome拡張機能のパフォーマンス要件を検証'
+            description: 'Chrome拡張機能のパフォーマンス要件を検証',
+            config: config
         });
 
         this.config = config;
