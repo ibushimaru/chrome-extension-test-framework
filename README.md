@@ -666,3 +666,29 @@ MIT
 - [npm パッケージ](https://www.npmjs.com/package/chrome-extension-test-framework)
 - [Chrome Extensions Documentation](https://developer.chrome.com/docs/extensions/)
 - [Manifest V3 Migration Guide](https://developer.chrome.com/docs/extensions/mv3/intro/mv3-migration/)
+
+## 🔍 トラブルシューティング
+
+### 行番号の不一致問題
+
+大きな行番号（例：ファイルが663行しかないのに1413行目でエラー）が報告される場合は、診断モードを有効にして原因を特定できます：
+
+```bash
+# 診断モードでテストを実行
+CEXT_DIAGNOSTIC=true cext-test your-extension-path
+```
+
+診断モードでは以下の情報が表示されます：
+- ファイルの実際の行数
+- 計算された行番号
+- ファイルのエンコーディング情報
+- 行末文字の種類（CRLF/LF）
+
+考えられる原因：
+1. **バンドルされたファイル**: WebpackやRollupでバンドルされたファイルは元のソースより大きくなります
+2. **ソースマップ**: 変換されたコードを分析している可能性があります
+3. **ファイルの結合**: 複数のファイルが結合されている可能性があります
+
+### その他の問題
+
+問題が解決しない場合は、[GitHub Issues](https://github.com/ibushimaru/chrome-extension-test-framework/issues)で報告してください。

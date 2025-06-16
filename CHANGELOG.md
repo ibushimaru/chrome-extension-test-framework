@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - package.json から動的にバージョンを取得するように変更
   - すべてのレポートで一貫したバージョン表示を実現
 
+### Added
+- **診断モード**: 行番号の不一致をデバッグするための診断機能
+  - `CEXT_DIAGNOSTIC=true` 環境変数で有効化
+  - ファイルの行数と報告された行番号の不一致を検出
+  - DiagnosticHelper クラスで詳細なファイル情報を提供
+
+### Notes
+- **Issue #46 について調査**:
+  - Permission False Positives: `activeTab` が未使用として報告されるのは正しい動作
+  - Line Number Accuracy: 行番号計算ロジックは正確に動作することを確認
+  - 大きな行番号が報告される場合は、ファイルの結合やバンドル処理が原因の可能性
+  - 診断モードを追加して、ユーザーが問題を特定できるように
+
 ## [1.15.0] - 2025-06-16
 
 ### Added
