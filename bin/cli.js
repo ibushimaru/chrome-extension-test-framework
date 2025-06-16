@@ -387,7 +387,7 @@ async function runTests() {
             // 設定ファイルの自動検出
             const ConfigLoader = require('../lib/ConfigLoader');
             const configLoader = new ConfigLoader();
-            defaultConfigPath = configLoader.findDefaultConfig();
+            defaultConfigPath = configLoader.findDefaultConfig(options.extensionPath);
             
             if (defaultConfigPath) {
                 console.log(`📄 Found config file: ${path.basename(defaultConfigPath)}`);

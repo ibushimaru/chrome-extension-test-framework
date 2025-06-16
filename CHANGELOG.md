@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.2] - 2025-06-16
+
+### Fixed
+- **Scope management**: Fixed fundamental issues with test scope
+  - Framework no longer tests its own files (lib/, suites/, etc.)
+  - Fixed TestSuite.getAllFiles() to exclude framework path
+  - Added framework directory exclusion to default patterns in ExcludeManager
+- **Config file discovery**: Fixed config file not being found in extension directory
+  - ConfigLoader now searches extension directory first, then working directory
+  - Proper config file path resolution for extension-specific configs
+- **Exclude patterns**: Fixed exclude patterns not being applied correctly
+  - SecurityTestSuite now uses getAllFiles() to respect ExcludeManager
+  - All test suites now properly respect exclude configuration
+  - Test directories and other excluded patterns now work as expected
+
+### Changed
+- Improved error categorization to avoid INTERNAL_ERROR overuse
+- Better separation between framework code and extension code
+
 ## [1.12.1] - 2025-06-16
 
 ### Fixed

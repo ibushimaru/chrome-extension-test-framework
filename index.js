@@ -17,7 +17,7 @@ const IncrementalTester = require('./lib/IncrementalTester');
 const VersionChecker = require('./lib/VersionChecker');
 
 // フレームワークのバージョン
-const VERSION = '1.12.1';
+const VERSION = '1.12.2';
 
 // デフォルト設定
 const DEFAULT_CONFIG = {

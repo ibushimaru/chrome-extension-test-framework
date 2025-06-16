@@ -393,28 +393,14 @@ class SecurityTestSuite extends TestSuite {
      * ファイルを検索
      */
     async findFiles(dir, extensions) {
-        const files = [];
+        // getAllFilesメソッドを使用してExcludeManagerを適用
+        const allFiles = await this.getAllFiles();
         const exts = Array.isArray(extensions) ? extensions : [extensions];
         
-        const walk = (currentDir) => {
-            const entries = fs.readdirSync(currentDir);
-            
-            entries.forEach(entry => {
-                const fullPath = path.join(currentDir, entry);
-                const stat = fs.statSync(fullPath);
-                
-                if (stat.isDirectory() && !entry.startsWith('.') && entry !== 'node_modules') {
-                    walk(fullPath);
-                } else if (stat.isFile()) {
-                    if (exts.some(ext => fullPath.endsWith(ext))) {
-                        files.push(fullPath);
-                    }
-                }
-            });
-        };
-        
-        walk(dir);
-        return files;
+        // 拡張子でフィルタリング
+        return allFiles
+            .map(relativePath => path.join(this.config.extensionPath, relativePath))
+            .filter(fullPath => exts.some(ext => fullPath.endsWith(ext)));
     }
 }
 
