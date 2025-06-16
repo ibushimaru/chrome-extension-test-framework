@@ -238,7 +238,7 @@ class ChromeExtensionTestFramework {
         
         // プログレス表示の開始
         const totalTests = this.suites.reduce((sum, suite) => sum + suite.tests.length, 0);
-        this.testRunner.progressReporter.start(this.suites.length, totalTests);
+        this.testRunner.progressReporter.start(this.suites.length, totalTests, this.config.extensionPath);
         const results = {
             framework: VERSION,
             timestamp: new Date().toISOString(),

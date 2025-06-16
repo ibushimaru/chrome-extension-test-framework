@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const SecurityAnalyzer = require('../lib/SecurityAnalyzer');
 const StorageAnalyzer = require('../lib/StorageAnalyzer');
+const ContextAwareDetector = require('../lib/ContextAwareDetector');
 
 class SecurityTestSuite extends TestSuite {
     constructor(config) {
@@ -108,24 +109,38 @@ class SecurityTestSuite extends TestSuite {
             }
         });
 
-        // innerHTMLの安全な使用
+        // innerHTMLの安全な使用（コンテキストを考慮）
         this.test('Safe innerHTML usage', async (config) => {
             const jsFiles = await this.findFiles(config.extensionPath, '.js');
+            const detector = new ContextAwareDetector();
+            const allIssues = [];
             
             for (const jsFile of jsFiles) {
                 const content = fs.readFileSync(jsFile, 'utf8');
+                const fileName = path.basename(jsFile);
+                const analysis = detector.analyze(content, jsFile);
                 
-                // innerHTMLの使用を検出
-                const innerHTMLRegex = /\.innerHTML\s*=/g;
-                if (innerHTMLRegex.test(content)) {
-                    console.warn(`   ⚠️  innerHTML usage found in ${path.basename(jsFile)} - ensure proper sanitization`);
-                }
+                // innerHTML関連の問題のみフィルタリング
+                const innerHTMLIssues = analysis.issues.filter(issue => 
+                    issue.type === 'unsafe-innerHTML'
+                );
                 
-                // outerHTMLの使用を検出
-                const outerHTMLRegex = /\.outerHTML\s*=/g;
-                if (outerHTMLRegex.test(content)) {
-                    console.warn(`   ⚠️  outerHTML usage found in ${path.basename(jsFile)} - ensure proper sanitization`);
+                if (innerHTMLIssues.length > 0) {
+                    innerHTMLIssues.forEach(issue => {
+                        if (issue.severity === 'high') {
+                            allIssues.push(`${fileName}:${issue.line} - ${issue.message}`);
+                        } else {
+                            console.warn(`   ⚠️  ${fileName}:${issue.line} - ${issue.message}`);
+                            if (issue.suggestion) {
+                                console.warn(`      💡 ${issue.suggestion}`);
+                            }
+                        }
+                    });
                 }
+            }
+            
+            if (allIssues.length > 0) {
+                throw new Error(`High-risk innerHTML usage detected:\n   ${allIssues.join('\n   ')}`);
             }
         });
 
@@ -316,23 +331,39 @@ class SecurityTestSuite extends TestSuite {
                 const content = fs.readFileSync(jsFile, 'utf8');
                 const fileName = path.basename(jsFile);
                 
-                // localStorage/sessionStorageでの機密データ保存チェック
-                const sensitiveStoragePatterns = [
-                    /localStorage\.(setItem|getItem)\s*\(\s*['"]?(password|token|key|secret|credential)/gi,
-                    /sessionStorage\.(setItem|getItem)\s*\(\s*['"]?(password|token|key|secret|credential)/gi
-                ];
+                // コンテキストを考慮したストレージ分析
+                const detector = new ContextAwareDetector();
+                const analysis = detector.analyze(content, jsFile);
                 
-                sensitiveStoragePatterns.forEach(pattern => {
-                    const matches = content.match(pattern);
-                    if (matches) {
-                        issues.push(`${fileName}: Sensitive data in browser storage - ${matches[0]}`);
+                // localStorage関連の問題をフィルタリング
+                const storageIssues = analysis.issues.filter(issue => 
+                    issue.type === 'sensitive-localstorage' || 
+                    issue.type === 'deprecated-storage'
+                );
+                
+                storageIssues.forEach(issue => {
+                    if (issue.severity === 'high') {
+                        issues.push(`${fileName}:${issue.line} - ${issue.message}`);
+                    } else if (issue.severity === 'medium' || issue.severity === 'low') {
+                        // 低・中レベルの問題は警告として表示
+                        if (!this.config.quiet) {
+                            console.warn(`   ⚠️  ${fileName}:${issue.line} - ${issue.message}`);
+                        }
                     }
                 });
                 
-                // 暗号化されていないデータの保存
-                if (/localStorage|sessionStorage/g.test(content) && 
-                    !/encrypt|crypto|cipher/gi.test(content)) {
-                    console.warn(`   ⚠️  ${fileName} uses browser storage without apparent encryption`);
+                // 暗号化チェックは維持（ただし誤検知を減らす）
+                const hasStorage = /localStorage|sessionStorage/g.test(content);
+                const hasEncryption = /encrypt|crypto|cipher|hash/gi.test(content);
+                const hasSensitivePattern = /password|token|key|secret|credential/gi.test(content);
+                
+                if (hasStorage && hasSensitivePattern && !hasEncryption) {
+                    // コメント内での言及は除外
+                    const cleanedContent = detector.removeNonCodeContent(content);
+                    if (/localStorage|sessionStorage/g.test(cleanedContent) && 
+                        /password|token|key|secret|credential/gi.test(cleanedContent)) {
+                        console.warn(`   ⚠️  ${fileName} may store sensitive data without encryption`);
+                    }
                 }
             }
             
