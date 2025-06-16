@@ -123,8 +123,8 @@ class StructureTestSuite extends TestSuite {
                 return;
             }
             
-            // 開発ファイルチェックでは除外を無視してすべてのファイルを取得
-            const allFiles = await this.getAllFiles('', [], { skipExclude: true });
+            // 開発ファイルチェックでも除外パターンを適用
+            const allFiles = await this.getAllFiles('', [], { skipExclude: false });
             
             // デフォルトの開発ファイルリスト
             const defaultDevFiles = [

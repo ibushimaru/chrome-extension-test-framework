@@ -147,6 +147,11 @@ class SecurityTestSuite extends TestSuite {
             const files = await this.findFiles(config.extensionPath, ['.js', '.html', '.json']);
             
             for (const file of files) {
+                // 拡張機能のディレクトリ内のファイルのみを対象にする
+                if (!file.startsWith(config.extensionPath)) {
+                    continue;
+                }
+                
                 const content = fs.readFileSync(file, 'utf8');
                 
                 // HTTPのURLを検出（localhostを除く）
@@ -154,7 +159,9 @@ class SecurityTestSuite extends TestSuite {
                 const matches = content.match(httpRegex);
                 
                 if (matches) {
-                    throw new Error(`Insecure HTTP URLs found in ${path.basename(file)}`);
+                    // 相対パスで表示
+                    const relativePath = path.relative(config.extensionPath, file);
+                    throw new Error(`Insecure HTTP URLs found in ${relativePath}`);
                 }
             }
         });

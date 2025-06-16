@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.3] - 2025-06-16
+
+### Fixed
+- **Issue #24: 除外パターンが完全に壊れている問題を修正**:
+  - StructureTestSuite の開発ファイル検出で除外パターンが無視されていた
+  - `skipExclude: true` を `false` に変更し、除外パターンを適用
+  - node_modules や設定で除外したディレクトリが正しく除外されるように
+
+- **Issue #31: 存在しないファイル index.js の検出を修正**:
+  - SecurityTestSuite の HTTPS enforcement テストでファイルパスを正しく処理
+  - 拡張機能のディレクトリ外のファイルをスキップ
+  - エラーメッセージで相対パスを使用するように改善
+
+- **Issue #26: 5ファイルの拡張機能で552+の誤検出**:
+  - Issue #24 の修正により、node_modules の誤検出も解決
+  - 除外パターンが正しく機能することで、拡張機能のファイルのみをテスト
+
+### Notes
+- Issue #33 (存在しない権限 scripting の誤検出) はカスタムテストの問題であることを確認
+- フレームワーク自体は scripting 権限を誤検出していない
+
 ## [1.14.2] - 2025-06-16
 
 ### Added
