@@ -17,7 +17,7 @@ const IncrementalTester = require('./lib/IncrementalTester');
 const VersionChecker = require('./lib/VersionChecker');
 
 // フレームワークのバージョン
-const VERSION = '1.9.0';
+const VERSION = '1.12.1';
 
 // デフォルト設定
 const DEFAULT_CONFIG = {
@@ -231,6 +231,11 @@ class ChromeExtensionTestFramework {
      * 順次実行
      */
     async runSequential(startTime) {
+        // Quietモードをグローバルに設定
+        if (this.config.quiet) {
+            global.__QUIET_MODE__ = true;
+        }
+        
         // プログレス表示の開始
         const totalTests = this.suites.reduce((sum, suite) => sum + suite.tests.length, 0);
         this.testRunner.progressReporter.start(this.suites.length, totalTests);
@@ -251,6 +256,14 @@ class ChromeExtensionTestFramework {
             // 結果を集計
             results.summary = this.calculateSummary(results.suites);
             results.duration = Date.now() - startTime;
+            
+            // すべての警告を集約
+            results.warnings = [];
+            results.suites.forEach(suite => {
+                if (suite.warnings && suite.warnings.length > 0) {
+                    results.warnings.push(...suite.warnings);
+                }
+            });
 
             // プログレス表示の完了
             this.testRunner.progressReporter.complete(results.summary);
@@ -264,6 +277,11 @@ class ChromeExtensionTestFramework {
         } catch (error) {
             console.error('❌ Test execution failed:', error);
             throw error;
+        } finally {
+            // Quietモードのクリーンアップ
+            if (this.config.quiet) {
+                global.__QUIET_MODE__ = false;
+            }
         }
     }
 
@@ -335,8 +353,16 @@ class ChromeExtensionTestFramework {
             passed: 0,
             failed: 0,
             skipped: 0,
-            errors: []
+            errors: [],
+            warningCount: 0
         };
+        
+        // 警告数をカウント
+        suites.forEach(suite => {
+            if (suite.warnings) {
+                summary.warningCount += suite.warnings.length;
+            }
+        });
 
         suites.forEach(suite => {
             suite.tests.forEach(test => {

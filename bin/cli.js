@@ -432,9 +432,16 @@ async function runTests() {
             
             console.log('\n4. Final configuration:');
             console.log(`   - Console thresholds:`);
-            console.log(`     • production: ${framework.config.consoleThresholds?.production || 10}`);
-            console.log(`     • development: ${framework.config.consoleThresholds?.development || 100}`);
-            console.log(`     • test: ${framework.config.consoleThresholds?.test || 'Infinity'}`);
+            const thresholds = framework.config.consoleThresholds || {};
+            console.log(`     • production: ${thresholds.production !== undefined ? thresholds.production : 10}`);
+            console.log(`     • development: ${thresholds.development !== undefined ? thresholds.development : 100}`);
+            console.log(`     • test: ${thresholds.test !== undefined ? thresholds.test : 'Infinity'}`);
+            if (thresholds.warn !== undefined) {
+                console.log(`     • warn: ${thresholds.warn}`);
+            }
+            if (thresholds.error !== undefined) {
+                console.log(`     • error: ${thresholds.error}`);
+            }
             
             if (framework.config.allowedDevFiles) {
                 console.log(`   - Allowed dev files: ${JSON.stringify(framework.config.allowedDevFiles)}`);

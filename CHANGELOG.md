@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.1] - 2025-06-16
+
+### Fixed
+- **node_modules false positive detection**: Fixed issue where "icons/node_modules" was incorrectly detected as node_modules directory
+  - Now checks complete directory names instead of partial matches
+- **Error categories**: Fixed incorrect INTERNAL_ERROR usage
+  - Development files and console.log errors now correctly use CODE_QUALITY category
+  - INTERNAL_ERROR is reserved for actual framework bugs
+- **Console detection improvements**: Added weighted scoring for different console methods
+  - console.error and console.warn have lower weights (0.2, 0.3) than console.log (1.0)
+  - More accurate console usage analysis
+- **Configuration file loading**: Fixed config values not being applied properly
+  - ConsoleAnalyzer now correctly receives config thresholds
+  - Config debug mode shows custom thresholds
+- **Error output simplification**: Removed duplicate error information in output
+  - Cleaner error messages without redundancy
+- **--quiet flag**: Fixed quiet mode functionality
+  - Now properly suppresses all decorative output during test execution
+  - Shows only errors and warnings in condensed format
+  - Warning collection system prevents duplicate output
+
 ## [1.12.0] - 2025-06-16
 
 ### Added
@@ -409,7 +430,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minimal memory footprint (~50MB)
 - No browser dependencies
 
-[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.12.0...HEAD
+[Unreleased]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.12.1...HEAD
+[1.12.1]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.12.0...v1.12.1
 [1.12.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.10.1...v1.11.0
 [1.10.1]: https://github.com/ibushimaru/chrome-extension-test-framework/compare/v1.10.0...v1.10.1

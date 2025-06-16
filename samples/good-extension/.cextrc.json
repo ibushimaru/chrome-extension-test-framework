@@ -1,0 +1,8 @@
+{
+  "consoleThresholds": {
+    "warn": 3,
+    "error": 1
+  },
+  "exclude": ["test/**", "docs/**"],
+  "quiet": false
+}

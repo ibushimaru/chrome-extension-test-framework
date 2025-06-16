@@ -183,7 +183,10 @@ class PerformanceTestSuite extends TestSuite {
                 // node_modulesが含まれていないことを確認
                 const nodeModulesPath = path.join(config.extensionPath, 'node_modules');
                 if (fs.existsSync(nodeModulesPath)) {
-                    throw new Error('node_modules directory should not be included in extension');
+                    const error = new Error('node_modules directory should not be included in extension');
+                    error.code = 'NODE_MODULES';
+                    error.category = 'PERFORMANCE_ERROR';
+                    throw error;
                 }
             }
         });

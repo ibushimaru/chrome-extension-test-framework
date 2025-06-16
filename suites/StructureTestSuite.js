@@ -189,10 +189,13 @@ class StructureTestSuite extends TestSuite {
                         }
                     }
                     
-                    // ディレクトリ名チェック
-                    if (!pattern.includes('*') && !pattern.includes('.') && dirname.includes(pattern)) {
-                        foundDevFiles.push(file);
-                        break;
+                    // ディレクトリ名チェック（完全一致のみ）
+                    if (!pattern.includes('*') && !pattern.includes('.')) {
+                        const dirParts = dirname.split(path.sep);
+                        if (dirParts.includes(pattern)) {
+                            foundDevFiles.push(file);
+                            break;
+                        }
                     }
                 }
             }
@@ -240,7 +243,10 @@ class StructureTestSuite extends TestSuite {
                 // 詳細なエラーメッセージ（最初の10ファイルのみ）
                 const displayFiles = foundDevFiles.slice(0, 10);
                 const remaining = foundDevFiles.length > 10 ? ` and ${foundDevFiles.length - 10} more` : '';
-                throw new Error(`Development files found: ${displayFiles.join(', ')}${remaining}`);
+                const error = new Error(`Development files found: ${displayFiles.join(', ')}${remaining}`);
+                error.code = 'DEVELOPMENT_FILES';
+                error.category = 'CODE_QUALITY';
+                throw error;
             }
         });
 
