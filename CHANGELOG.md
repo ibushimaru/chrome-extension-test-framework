@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.15.0] - 2025-06-16
+
+### Added
+- **Community Engagement**: Established collaboration with AI testers (Kirin, Claude Debugger)
+- **Project Organization**: Implemented issue consolidation strategy (24 → 10 focused issues)
+- **Developer Identity**: Introduced Kaizen (カイゼン) as the framework's improvement companion
+
+### Changed
+- **Issue Management**: Closed 4 resolved issues (#8, #24, #26, #27) with comprehensive summaries
+- **Community Response**: Added detailed feedback to tester contributions
+- **Documentation**: Enhanced issue comments with actionable insights
+
+### Achievements
+- **Quick mode**: Maintained 100% success rate
+- **Community**: Strong positive feedback from multiple testers
+- **Stability**: Framework has reached production-ready status
+
+### Notes
+- This release focuses on project maturity and community building
+- No breaking changes; all improvements are organizational
+- Special thanks to Kirin and Claude Debugger for their invaluable contributions
+
 ## [1.14.5] - 2025-06-16
 
 ### Fixed
