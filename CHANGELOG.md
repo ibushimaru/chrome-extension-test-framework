@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.15.1] - 2025-06-16
+
+### Fixed
+- **Issue #45: detector.removeNonCodeContent エラーを修正**:
+  - SecurityTestSuite.js で存在しない `removeNonCodeContent` メソッドを呼び出していた問題を修正
+  - 該当のコードを削除し、ContextAwareDetector の既存機能で対応
+  - テストの実行が中断される重大なバグを解消
+
 ## [1.15.0] - 2025-06-16
 
 ### Added

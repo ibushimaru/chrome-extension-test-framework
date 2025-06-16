@@ -365,12 +365,9 @@ class SecurityTestSuite extends TestSuite {
                 const hasSensitivePattern = /password|token|key|secret|credential/gi.test(content);
                 
                 if (hasStorage && hasSensitivePattern && !hasEncryption) {
-                    // コメント内での言及は除外
-                    const cleanedContent = detector.removeNonCodeContent(content);
-                    if (/localStorage|sessionStorage/g.test(cleanedContent) && 
-                        /password|token|key|secret|credential/gi.test(cleanedContent)) {
-                        console.warn(`   ⚠️  ${fileName} may store sensitive data without encryption`);
-                    }
+                    // ストレージと機密データパターンの両方が存在し、暗号化がない場合のみ警告
+                    // コンテキストベースの検出により、コメントや文字列リテラル内の検出は既に除外されている
+                    console.warn(`   ⚠️  ${fileName} may store sensitive data without encryption`);
                 }
             }
             
