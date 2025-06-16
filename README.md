@@ -28,15 +28,29 @@
 ## インストール
 
 ### npmからインストール（推奨）
-```bash
-# ローカルインストール
-npm install chrome-extension-test-framework
 
-# グローバルインストール
+⚠️ **重要**: CLIツールとして使用する場合は、**必ずグローバルインストール**してください：
+
+```bash
+# ✅ グローバルインストール（CLIコマンドとして使用）
 npm install -g chrome-extension-test-framework
 
-# 開発依存としてインストール
+# 以下は特定の用途向け：
+
+# ローカルインストール（package.jsonのscriptsで使用）
+npm install chrome-extension-test-framework
+
+# 開発依存としてインストール（CI/CDで使用）
 npm install --save-dev chrome-extension-test-framework
+```
+
+**グローバルインストール後の確認:**
+```bash
+# インストール確認
+cext-test --version
+
+# ヘルプ表示
+cext-test --help
 ```
 
 ### GitHubからインストール

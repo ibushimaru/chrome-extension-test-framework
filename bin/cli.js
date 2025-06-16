@@ -7,10 +7,15 @@
 const path = require('path');
 const fs = require('fs');
 const ChromeExtensionTestFramework = require('../index');
+const LocalInstallChecker = require('../lib/LocalInstallChecker');
 
 // CLIのバージョン
 const packageJson = require('../package.json');
 const VERSION = packageJson.version;
+
+// ローカルインストールチェック
+const installChecker = new LocalInstallChecker();
+installChecker.showInstallationHint();
 
 // コマンドライン引数の解析
 const args = process.argv.slice(2);

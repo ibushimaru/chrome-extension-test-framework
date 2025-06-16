@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.2] - 2025-06-16
+
+### Added
+- **ローカルインストール検出機能**:
+  - LocalInstallChecker クラスを追加
+  - ローカルインストール時にグローバルインストールを促す警告を表示
+  - CLIコマンド実行時に自動的にインストール状態をチェック
+  - postinstall スクリプトでインストール方法を案内
+
+### Changed
+- **README.md のインストール手順を改善**:
+  - グローバルインストールの重要性を強調
+  - CLIツールとして使用する場合は `-g` フラグが必須であることを明記
+  - インストール後の確認方法を追加
+
+### Fixed
+- **インストール関連のユーザビリティ向上**:
+  - ローカルインストールしたユーザーが `cext-test` コマンドを使えない問題への対処
+  - postinstall でローカル/グローバルを自動判定して適切な案内を表示
+  - npx や npm scripts での実行方法も案内
+
 ## [1.14.1] - 2025-06-16
 
 ### Fixed
