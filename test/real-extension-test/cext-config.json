@@ -1,0 +1,8 @@
+{
+  "extensionPath": ".",
+  "exclude": ["node_modules/**", "*.test.js"],
+  "severity": {
+    "localStorage": "error",
+    "innerHTML": "error"
+  }
+}

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.4] - 2025-06-16
+
+### Fixed
+- **Issue #32: innerHTML検出の行番号が不正確な問題を修正**:
+  - ContextAwareDetector でテンプレートリテラルを含む innerHTML が検出されない問題を修正
+  - `isSafeInnerHTMLAssignment` メソッドを改善し、テンプレートリテラル内の変数展開を正しく危険と判定
+  - すべての innerHTML 使用箇所が正確な行番号で検出されるように
+
 ## [1.14.3] - 2025-06-16
 
 ### Fixed
