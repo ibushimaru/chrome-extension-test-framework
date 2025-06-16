@@ -8,6 +8,7 @@ const Validator = require('../lib/Validator');
 const fs = require('fs');
 const path = require('path');
 const PermissionsAnalyzer = require('../lib/PermissionsAnalyzer');
+const PermissionDetector = require('../lib/PermissionDetector');
 
 class ManifestTestSuite extends TestSuite {
     constructor(config) {
@@ -467,6 +468,66 @@ class ManifestTestSuite extends TestSuite {
                 }
             } else {
                 console.warn(`   ⚠️  No minimum_chrome_version specified. Consider setting it to 88 or higher for Manifest V3`);
+            }
+        });
+
+        // ファントム権限の検出（実際に使用されていない権限）
+        this.test('Phantom permissions detection', async (config) => {
+            const manifest = await this.loadManifest(config);
+            const detector = new PermissionDetector();
+            
+            // すべてのJavaScriptファイルを取得
+            const jsFiles = await this.getAllFiles('', [], { skipExclude: false });
+            const files = [];
+            
+            for (const filePath of jsFiles.filter(f => f.endsWith('.js'))) {
+                const fullPath = path.join(config.extensionPath, filePath);
+                const content = fs.readFileSync(fullPath, 'utf8');
+                files.push({ path: filePath, content });
+            }
+            
+            // 使用されている権限を検出
+            const detectedPermissions = detector.detectUsedPermissions(files);
+            
+            // マニフェストと比較
+            const comparison = detector.compareWithManifest(manifest, detectedPermissions);
+            
+            // 未使用の権限を報告
+            if (comparison.unusedPermissions.length > 0) {
+                console.warn('   ⚠️  Unused permissions detected (phantom permissions):');
+                comparison.unusedPermissions.forEach(perm => {
+                    console.warn(`      • ${perm} - declared but not used in code`);
+                });
+                console.warn('   💡 Consider removing unused permissions to follow the principle of least privilege');
+            }
+            
+            // 不足している権限を報告
+            if (comparison.missingPermissions.length > 0) {
+                throw new Error(`Missing required permissions: ${comparison.missingPermissions.join(', ')}`);
+            }
+            
+            // 広範なホスト権限の警告
+            if (comparison.unusedHosts.length > 0) {
+                const broadPatterns = comparison.unusedHosts.filter(h => 
+                    h === '<all_urls>' || h === '*://*/*' || h === 'http://*/*' || h === 'https://*/*'
+                );
+                if (broadPatterns.length > 0) {
+                    console.warn('   ⚠️  Overly broad host permissions detected:');
+                    broadPatterns.forEach(pattern => {
+                        console.warn(`      • ${pattern} - consider using activeTab or specific domains`);
+                    });
+                }
+            }
+            
+            // API使用状況のサマリー（verboseモード）
+            if (config.verbose && Object.keys(detectedPermissions.apiUsage).length > 0) {
+                console.log('   📊 Chrome API usage detected:');
+                Object.entries(detectedPermissions.apiUsage)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 10)
+                    .forEach(([api, count]) => {
+                        console.log(`      • ${api}: ${count} calls`);
+                    });
             }
         });
     }
