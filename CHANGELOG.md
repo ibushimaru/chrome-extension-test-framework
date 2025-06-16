@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.3] - 2025-06-16
+
+### Fixed
+- **Nested node_modules detection**: Fixed false positive for nested node_modules directories
+  - Now only flags root-level node_modules as problematic
+  - Nested directories like `icons/node_modules/**` are allowed (legitimate build dependencies)
+- **Environment-aware console detection**: Improved console.log detection with context awareness
+  - Different thresholds for service workers (5), content scripts (15), and production code (10)
+  - Better file type detection (service-worker, content-script, test, development, production)
+  - More helpful suggestions based on file context
+  - Service workers get stricter checks due to performance impact
+  - Test files and build outputs are ignored
+
+### Changed
+- ConsoleAnalyzer now provides environment-specific recommendations
+- StructureTestSuite displays file type labels in Japanese for better clarity
+- Weighted console usage counts shown when different from actual counts
+
 ## [1.12.2] - 2025-06-16
 
 ### Fixed

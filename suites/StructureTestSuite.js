@@ -189,12 +189,27 @@ class StructureTestSuite extends TestSuite {
                         }
                     }
                     
-                    // ディレクトリ名チェック（完全一致のみ）
+                    // ディレクトリ名チェック
                     if (!pattern.includes('*') && !pattern.includes('.')) {
-                        const dirParts = dirname.split(path.sep);
-                        if (dirParts.includes(pattern)) {
-                            foundDevFiles.push(file);
-                            break;
+                        // node_modulesの特別処理 - ルートレベルのみチェック
+                        if (pattern === 'node_modules') {
+                            const dirParts = dirname.split(path.sep);
+                            // ルートレベルのnode_modulesのみを問題として扱う
+                            if (dirParts.length === 1 && dirParts[0] === 'node_modules') {
+                                foundDevFiles.push(file);
+                                break;
+                            } else if (dirParts.length === 0 && basename === 'node_modules') {
+                                // node_modulesディレクトリ自体
+                                foundDevFiles.push(file);
+                                break;
+                            }
+                        } else {
+                            // その他の開発ディレクトリは通常通りチェック
+                            const dirParts = dirname.split(path.sep);
+                            if (dirParts.includes(pattern)) {
+                                foundDevFiles.push(file);
+                                break;
+                            }
                         }
                     }
                 }
@@ -485,9 +500,19 @@ class StructureTestSuite extends TestSuite {
                 console.log(`   📊 Console usage analysis:`);
                 console.log(`      - Total console calls: ${totalConsoleUsage}`);
                 
-                // ファイルタイプ別の表示
+                // ファイルタイプ別の表示（環境別に整理）
+                const fileTypeLabels = {
+                    'production': '本番コード',
+                    'service-worker': 'Service Worker',
+                    'content-script': 'Content Script',
+                    'development': '開発用',
+                    'test': 'テスト',
+                    'production-build': 'ビルド成果物'
+                };
+                
                 Object.entries(summary.byFileType).forEach(([fileType, data]) => {
-                    console.log(`      - ${fileType}: ${data.count} calls in ${data.files} files`);
+                    const label = fileTypeLabels[fileType] || fileType;
+                    console.log(`      - ${label}: ${data.count} calls in ${data.files} files`);
                 });
                 
                 // 閾値を超えているファイルの表示
@@ -495,7 +520,14 @@ class StructureTestSuite extends TestSuite {
                 if (exceededFiles.length > 0) {
                     console.warn(`   ⚠️  Files exceeding console usage threshold:`);
                     exceededFiles.forEach(result => {
-                        console.warn(`      - ${result.file}: ${result.count} calls (threshold: ${result.threshold})`);
+                        const typeLabel = fileTypeLabels[result.fileType] || result.fileType;
+                        console.warn(`      - ${result.file} (${typeLabel}): ${result.count} calls, threshold: ${result.threshold}`);
+                        
+                        // 加重カウントが実際のカウントと異なる場合は表示
+                        if (result.weightedCount !== result.count) {
+                            console.log(`        📊 Weighted count: ${result.weightedCount} (error/warn have lower weight)`);
+                        }
+                        
                         if (result.details.hasDebugComments) {
                             console.log(`        💡 Contains debug comments - consider removing for production`);
                         }
