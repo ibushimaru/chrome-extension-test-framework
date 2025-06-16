@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.16.0] - 2025-06-17
+
+### Fixed
+- **Issue #55: node_modules Scan Performance** (23% of failures):
+  - Added fast regex checks in ExcludeManager for instant node_modules detection
+  - Implemented early directory exclusion in TestSuite.getAllFiles()
+  - Added PerformanceMonitor class for tracking scan metrics
+  - Reduced scan time from 45+ seconds to <10 seconds
+
+- **Issue #54: Permission Detection False Positives** (15% of failures):
+  - Enhanced PermissionDetector to ignore comments and strings
+  - Added file exclusion for test/example/documentation files
+  - Improved regex patterns with better word boundary detection
+  - Added fallback for browsers without lookbehind support
+
+- **Issue #53: Success Rate Improvements** (81% → 95% target):
+  - **Line Number Accuracy**: Fixed calculation edge cases in SecurityAnalyzer
+  - **innerHTML False Positives**: Added framework-specific safe pattern detection (React, Vue, Angular)
+  - **Performance Thresholds**: Relaxed limits to realistic values (bundle: 500KB→1MB, memory leak: 5→10)
+  - **Localization Requirements**: Made _locales warnings instead of errors
+
+### Added
+- **Performance Monitoring**: New PerformanceMonitor class with CEXT_PERF=true environment variable
+- **Framework Detection**: Comprehensive patterns for React, Vue, and Angular code
+- **Context Awareness**: Better detection of minified files and worker scripts
+
+### Changed
+- **Performance Thresholds**:
+  - Bundle size: 500KB → 1MB
+  - Memory leak threshold: 5 → 10 occurrences
+  - Heavy computation: 1000ms → 2000ms
+  - DOM element threshold: 1000 → 2000
+- **Localization**: Now shows warnings instead of errors for missing default_locale
+
 ## [1.15.1] - 2025-06-16
 
 ### Fixed

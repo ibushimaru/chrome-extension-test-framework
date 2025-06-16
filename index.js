@@ -15,6 +15,7 @@ const WarningManager = require('./lib/WarningManager');
 const ProfileManager = require('./lib/ProfileManager');
 const IncrementalTester = require('./lib/IncrementalTester');
 const VersionChecker = require('./lib/VersionChecker');
+const PerformanceMonitor = require('./lib/PerformanceMonitor');
 
 // フレームワークのバージョン（package.jsonから動的に取得）
 const VERSION = require('./package.json').version;
@@ -236,6 +237,10 @@ class ChromeExtensionTestFramework {
             global.__QUIET_MODE__ = true;
         }
         
+        // パフォーマンス測定開始
+        const performanceMonitor = this.testRunner.getPerformanceMonitor();
+        performanceMonitor.start('total-execution');
+        
         // プログレス表示の開始
         const totalTests = this.suites.reduce((sum, suite) => sum + suite.tests.length, 0);
         this.testRunner.progressReporter.start(this.suites.length, totalTests, this.config.extensionPath);
@@ -267,6 +272,15 @@ class ChromeExtensionTestFramework {
 
             // プログレス表示の完了
             this.testRunner.progressReporter.complete(results.summary);
+            
+            // パフォーマンス測定終了
+            performanceMonitor.end('total-execution', {
+                totalTests,
+                suiteCount: this.suites.length
+            });
+            
+            // パフォーマンスレポートを表示
+            performanceMonitor.printSummary();
 
             // レポートを生成
             await this.reporter.generate(results);
