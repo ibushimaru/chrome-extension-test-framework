@@ -39,7 +39,8 @@ const options = {
     noVersionCheck: false,
     showConfig: false,
     init: false,
-    quiet: false
+    quiet: false,
+    quick: false
 };
 
 // 引数を解析
@@ -162,6 +163,10 @@ for (let i = 0; i < args.length; i++) {
             options.progress = false;
             break;
             
+        case '--quick':
+            options.quick = true;
+            break;
+            
         default:
             if (!arg.startsWith('-')) {
                 options.extensionPath = path.resolve(arg);
@@ -203,6 +208,7 @@ Options:
   --debug-config          Show detailed configuration loading process
   --init                  Initialize a new configuration file
   -q, --quiet             Quiet mode for CI (errors/warnings only)
+  --quick                 Quick mode - run only essential tests
 
 Test Suites:
   manifest      - Validate manifest.json
@@ -225,6 +231,7 @@ Examples:
   cext-test --profile production        # Use production profile
   cext-test --changed                   # Test only changed files (git)
   cext-test --since-last-run            # Test files changed since last run
+  cext-test --quick                     # Quick test with essential checks only
 
 Configuration:
   Create a cext-test.config.js or .cextrc.json file for custom settings:
@@ -554,8 +561,25 @@ async function runTests() {
             }
         }
 
-        // テストスイートを選択
-        if (options.suites.includes('all')) {
+        // クイックモードの場合は必須テストのみ
+        if (options.quick) {
+            console.log('⚡ Quick mode: Running essential tests only\n');
+            // 必須テストのみ実行
+            const quickSuites = {
+                'manifest': require('../suites/ManifestTestSuite'),
+                'security': require('../suites/SecurityTestSuite')
+            };
+            
+            Object.entries(quickSuites).forEach(([name, Suite]) => {
+                const suiteConfig = {
+                    ...framework.config,
+                    excludeManager: framework.excludeManager,
+                    // クイックモードでは一部のテストをスキップ
+                    quickMode: true
+                };
+                framework.addSuite(new Suite(suiteConfig));
+            });
+        } else if (options.suites.includes('all')) {
             framework.useBuiltinTests();
         } else {
             // 個別のスイートを追加

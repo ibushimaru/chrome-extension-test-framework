@@ -29,6 +29,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SecurityTestSuite now uses ContextAwareDetector for more accurate detection
 - Improved error messages with line numbers and specific suggestions
 - Better handling of comments and string literals in code analysis
+- **Error categorization improvements** (Issue #10):
+  - More specific categorization based on error context
+  - Manual category assignments are now respected
+  - Better distinction between different error types
+- **Output simplification** (Issue #11):
+  - Non-verbose mode now shows compact progress (dots instead of full test names)
+  - Added SummaryReporter for concise test result overview
+  - Verbose output improvements with progress bars only in verbose mode
+
+### Added
+- **Quick mode** (Issue #13): Fast testing with only essential checks
+  - Run with `--quick` flag for rapid validation
+  - Executes only critical security and manifest tests
+  - Perfect for pre-commit hooks and CI/CD pipelines
+  - Typically completes in under 1 second
+- EssentialTests module to define which tests are critical
+- Context-aware detection reduces noise and improves accuracy
 
 ## [1.12.3] - 2025-06-16
 
