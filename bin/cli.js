@@ -616,15 +616,13 @@ async function runTests() {
         // 終了コードを設定
         let exitCode = 0;
         
-        if (options.failOnError && results.summary.failed > 0) {
+        // テストが失敗した場合は常に1を返す（CI/CDで重要）
+        if (results.summary.failed > 0) {
             exitCode = 1;
         }
         
+        // --fail-on-warningが指定されている場合、警告でも1を返す
         if (options.failOnWarning && results.warnings && results.warnings.length > 0) {
-            exitCode = 1;
-        }
-        
-        if (!options.failOnError && results.summary.failed > 0) {
             exitCode = 1;
         }
         

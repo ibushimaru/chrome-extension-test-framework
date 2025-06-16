@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.1] - 2025-06-16
+
+### Fixed
+- **"detector.analyze is not a function" error** (Issue #22):
+  - Fixed SecurityTestSuite to use specific detector methods (detectUnsafeInnerHTML, detectLocalStorageUsage)
+  - ContextAwareDetector never had an analyze() method - fixed incorrect usage
+
+- **Phantom permission detection accuracy** (Issue #23):
+  - Improved Chrome API detection regex to match property access patterns
+  - Now correctly detects chrome.storage.local usage
+  - Fixed false positives for commonly used APIs
+  - Added support for await patterns and property access
+
+### Added
+- Support for new Chrome APIs:
+  - chrome.sidePanel API (Chrome 114+)
+  - chrome.offscreen API
+  - Proper permission mapping for these new APIs
+
+- **JSON Schema for configuration**: Added .cextrc.schema.json for VS Code autocomplete
+  - Comprehensive schema covering all configuration options
+  - Type validation and descriptions for all fields
+  - Enables IntelliSense in VS Code when editing .cextrc.json
+
+### Changed
+- **Exit codes**: Test failures now always return exit code 1 for proper CI/CD integration
+  - Previously had conflicting logic that could return 0 on failures
+  - Now consistently returns 1 for any test failures
+  - --fail-on-warning still works as expected
+
+### Notes
+- Console detection already supports all methods (implemented in v1.12.0)
+- --init command already exists (implemented in v1.12.0)
+- --quiet flag already exists (implemented in v1.12.0)
+- Markdown report format already exists (implemented but not documented)
+- SeverityManager already provides ERROR/WARNING/INFO differentiation
+
 ## [1.14.0] - 2025-06-16
 
 ### Added

@@ -119,12 +119,9 @@ class SecurityTestSuite extends TestSuite {
             for (const jsFile of jsFiles) {
                 const content = fs.readFileSync(jsFile, 'utf8');
                 const fileName = path.basename(jsFile);
-                const analysis = detector.analyze(content, jsFile);
                 
-                // innerHTML関連の問題のみフィルタリング
-                const innerHTMLIssues = analysis.issues.filter(issue => 
-                    issue.type === 'unsafe-innerHTML'
-                );
+                // innerHTMLの検出
+                const innerHTMLIssues = detector.detectUnsafeInnerHTML(content, jsFile);
                 
                 if (innerHTMLIssues.length > 0) {
                     innerHTMLIssues.forEach(issue => {
@@ -334,12 +331,14 @@ class SecurityTestSuite extends TestSuite {
                 
                 // コンテキストを考慮したストレージ分析
                 const detector = new ContextAwareDetector();
-                const analysis = detector.analyze(content, jsFile);
+                
+                // localStorageの使用を検出
+                const localStorageIssues = detector.detectLocalStorageUsage(content, jsFile);
                 
                 // localStorage関連の問題をフィルタリング
-                const storageIssues = analysis.issues.filter(issue => 
-                    issue.type === 'sensitive-localstorage' || 
-                    issue.type === 'deprecated-storage'
+                const storageIssues = localStorageIssues.filter(issue => 
+                    issue.type === 'localStorage' && 
+                    (issue.severity === 'high' || issue.severity === 'medium')
                 );
                 
                 storageIssues.forEach(issue => {
