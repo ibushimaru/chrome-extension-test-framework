@@ -278,8 +278,8 @@ class SecurityTestSuite extends TestSuite {
 
         // 高度なセキュリティ分析
         this.test('Advanced security analysis', async (config) => {
-            const analyzer = new SecurityAnalyzer();
-            const results = await analyzer.analyze(config.extensionPath);
+            const analyzer = new SecurityAnalyzer(config);
+            const results = await analyzer.analyze(config.extensionPath, this.excludeManager);
             const report = analyzer.generateReport();
             
             // クリティカルな問題がある場合はエラー
