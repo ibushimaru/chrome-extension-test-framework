@@ -16,8 +16,8 @@ const ProfileManager = require('./lib/ProfileManager');
 const IncrementalTester = require('./lib/IncrementalTester');
 const VersionChecker = require('./lib/VersionChecker');
 
-// フレームワークのバージョン
-const VERSION = '1.14.1';
+// フレームワークのバージョン（package.jsonから動的に取得）
+const VERSION = require('./package.json').version;
 
 // デフォルト設定
 const DEFAULT_CONFIG = {

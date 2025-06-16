@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 該当のコードを削除し、ContextAwareDetector の既存機能で対応
   - テストの実行が中断される重大なバグを解消
 
+- **Issue #44: バージョン管理の不整合を修正**:
+  - index.js のハードコードされたバージョン番号を削除
+  - package.json から動的にバージョンを取得するように変更
+  - すべてのレポートで一貫したバージョン表示を実現
+
 ## [1.15.0] - 2025-06-16
 
 ### Added
