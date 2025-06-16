@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.0] - 2025-06-16
+
+### Added
+- **ContextAwareDetector**: New intelligent detection system for reducing false positives
+  - Ignores innerHTML/localStorage usage in comments and string literals
+  - Context-aware severity levels (high/medium/low) based on usage patterns
+  - Recognizes safe innerHTML patterns (empty strings, DOMPurify, chrome.i18n)
+  - Better detection of sensitive data in localStorage
+
+### Fixed
+- **Framework scanning its own files** (Issues #8, #12): 
+  - ProgressReporter now correctly displays the extension path being tested
+  - Framework properly focuses on target extension directory only
+- **False positives in security detection** (Issue #9):
+  - innerHTML detection now ignores safe patterns and string literals
+  - localStorage detection is more context-aware
+  - Reduced noise from legitimate usage patterns
+
+### Changed
+- SecurityTestSuite now uses ContextAwareDetector for more accurate detection
+- Improved error messages with line numbers and specific suggestions
+- Better handling of comments and string literals in code analysis
+
 ## [1.12.3] - 2025-06-16
 
 ### Fixed
