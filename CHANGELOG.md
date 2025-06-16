@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.0] - 2025-06-16
+
+### Added
+- **ChromePatternRecognizer**: Chrome extension-specific pattern recognition (Issue #18)
+  - Understands safe Chrome API usage patterns
+  - Recognizes file context (background, content script, popup, options)
+  - Detects required permissions from code usage
+  - Reduces false positives for Chrome extension APIs
+
+- **EnvironmentDetector**: Environment-aware detection system
+  - Identifies development, test, and production environments
+  - Adjusts severity based on environment context
+  - Allows console.log in development, strict in production
+  - Recognizes conditional debug code
+
+- **SeverityManager**: Three-tier severity system (ERROR/WARNING/INFO)
+  - Replaces old critical/high/medium/low system
+  - Proper exit codes based on severity levels
+  - Customizable severity mappings
+  - Profile-based severity adjustments
+
+- **ImprovedErrorMessages**: Specific and actionable error messages
+  - Detailed explanations for each issue type
+  - Multiple solution suggestions with code examples
+  - Reference links to documentation
+  - Context-aware recommendations
+
+- **PermissionDetector**: Accurate phantom permission detection
+  - Detects actually used Chrome APIs from code
+  - Identifies unused declared permissions
+  - Suggests missing required permissions
+  - Recommends activeTab over broad host permissions
+
+### Fixed
+- **Exclude patterns not working** (Issue #16):
+  - Fixed TestSuite configuration to properly pass excludeManager
+  - Refined framework path exclusion to only exclude core directories
+  - Exclude patterns from .cextrc.json now work correctly
+
+- **Phantom permission detection**: 
+  - Added accurate detection of unused permissions in manifest.json
+  - Properly identifies which Chrome APIs actually need permissions
+  - Distinguishes between required and optional permissions
+
+### Changed
+- ManifestTestSuite now includes phantom permission detection test
+- SecurityAnalyzer integrates with all new detection modules
+- Reporter uses new severity levels for clearer output
+- Better understanding of Chrome extension development patterns
+
 ## [1.13.0] - 2025-06-16
 
 ### Added
