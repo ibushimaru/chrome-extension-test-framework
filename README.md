@@ -363,6 +363,36 @@ const versionTest = TestCase.expect(
 2. **ignorePatterns** - 特定のテストでは無視（将来実装）
 3. **allowedDevFiles** - 開発ファイルチェックで許可される
 
+### .extensionignore ファイル (v1.16.1+)
+
+拡張機能のルートディレクトリに `.extensionignore` ファイルを作成することで、プロジェクト固有の除外パターンを指定できます：
+
+```bash
+# .extensionignore の例
+# デザインアセット
+design-assets/
+mockups/
+*.psd
+*.ai
+
+# ドキュメント
+docs/
+*.md
+
+# 開発ツール
+.vscode/
+.idea/
+
+# カスタムビルドファイル
+build-scripts/
+*.config.local.js
+```
+
+- `.gitignore` と同様の記法をサポート
+- `#` で始まる行はコメント
+- 空行は無視される
+- 設定ファイルの `exclude` パターンと併用可能
+
 ### 設定ファイルの作成
 
 `cext-test.config.js`または`.cextrc.json`を作成:
