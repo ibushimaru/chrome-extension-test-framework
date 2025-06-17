@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.16.1] - 2025-06-17
+
+### Fixed
+- **Issue #59: Success Rate Fix** (98% → 100%):
+  - Fixed tabs API permission detection - `chrome.tabs.query` and `chrome.tabs.update` don't require tabs permission in Manifest V3 for basic usage
+  - Reverted incorrect changes that caused false positives for tabs permission
+  - Test success rate improved from 98% to 100%
+
+- **Design Assets Exclusion**:
+  - Added default exclusion patterns for non-runtime directories: `design-assets/`, `docs/`, `mockups/`, etc.
+  - Added support for `.extensionignore` file to allow custom exclusion patterns
+  - Prevents security scanner from analyzing non-code files
+
+- **Permission Detection Improvements**:
+  - More accurate tabs permission detection for Manifest V3
+  - Added favicon API detection for `chrome.favicon.*` methods
+  - Better handling of Manifest V3 specific APIs
+
+### Added
+- Support for `.extensionignore` file for custom exclusion patterns
+- More comprehensive default exclusion patterns for development files
+
 ## [1.16.0] - 2025-06-17
 
 ### Fixed
