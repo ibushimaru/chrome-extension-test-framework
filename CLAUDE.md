@@ -1,200 +1,357 @@
-# Chrome Extension Test Framework - Development Workflow
+# Chrome Extension Test Framework - Claude 完全引き継ぎ仕様書
 
-このドキュメントは、Chrome Extension Test Framework の開発・リリースワークフローを記載しています。
+このドキュメントは、WSL環境からDocker環境への移行に伴い、次のClaudeインスタンスが完全に引き継げるよう、プロジェクトのすべての情報を記録したものです。
 
-## 🚀 リリースフロー
+## 🤖 あなたの役割と責任
 
-新機能の追加やバグ修正を行い、新バージョンをリリースする際の標準的なフローです。
+あなたは Chrome Extension Test Framework の開発アシスタントです。以下の責任を持ちます：
 
-### 1. 開発ブランチの作成
-```bash
-git checkout -b feature/your-feature-name
+1. **品質の番人**: テスト成功率100%を維持し、すべての変更でテストを実行
+2. **リリースマネージャー**: npm への公開とバージョン管理を担当
+3. **問題解決者**: AIテスターからのIssueに迅速に対応
+4. **ドキュメント管理者**: CHANGELOG、README、リリースノートを最新に保つ
+
+## 📊 プロジェクトの現在状態 (2025-06-17)
+
+### バージョン情報
+- **現在のバージョン**: v1.16.1
+- **npm公開済み**: はい
+- **テスト成功率**: 100% (57/57 テスト合格)
+- **最後のリリース**: 2025-06-17
+
+### 直近の重要な成果
+1. **Issue #59 解決**: 成功率を91%から100%に改善
+2. **tabs権限の誤検出修正**: Manifest V3での正しい動作を実現
+3. **.extensionignore サポート追加**: カスタム除外パターン機能
+4. **パフォーマンス改善**: node_modules スキャン時間を45秒→10秒以下に短縮
+
+## 🛠️ 技術アーキテクチャ
+
+### コアコンポーネント
+```
+lib/
+├── PermissionDetector.js    # Chrome API権限検出（重要: tabs権限の判定ロジック）
+├── ExcludeManager.js        # ファイル除外管理（.extensionignore対応）
+├── ContextAwareDetector.js  # コンテキスト認識型セキュリティ検出
+├── PerformanceMonitor.js    # パフォーマンス計測（CEXT_PERF=true）
+├── SecurityAnalyzer.js      # セキュリティ脆弱性検出
+└── ErrorHandler.js          # エラーカテゴリ管理
 ```
 
-### 2. 開発作業
-- コードの変更
-- テストの実行: `npm test`
-- リンターの実行: `npm run lint` (設定されている場合)
-- 型チェック: `npm run typecheck` (TypeScript プロジェクトの場合)
+### 重要な設計決定
+1. **ゼロ依存**: 外部パッケージを一切使用しない
+2. **静的解析のみ**: ブラウザ不要、コード実行なし
+3. **高速実行**: 100ms以下を目標
+4. **日本語サポート**: エラーメッセージとドキュメントの両対応
 
-### 3. コミット
+## 🚀 開発ワークフロー
+
+### 1. Issue対応フロー
 ```bash
-git add .
-git commit -m "feat: Your feature description
+# 1. Issueの内容を理解
+# 2. TodoWriteツールで作業項目を作成
+# 3. 問題の原因を特定（Grep、Read、Taskツール活用）
+# 4. 修正を実装
+# 5. npm testで動作確認
+# 6. 成功率100%を確認
+```
 
-- Detailed change 1
-- Detailed change 2
+### 2. リリースフロー
+```bash
+# 1. すべてのテストが合格することを確認
+npm test
+
+# 2. バージョン更新
+# package.json の version フィールドを更新
+
+# 3. CHANGELOG.md を更新
+# 新バージョンのセクションを追加
+
+# 4. コミット
+git add -A
+git commit -m "fix/feat: 説明
+
+- 詳細1
+- 詳細2
 
 🤖 Generated with Claude Code
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
-```
 
-### 4. プルリクエストの作成
-```bash
-git push -u origin feature/your-feature-name
-gh pr create --title "feat: Your feature" --body "## 概要\n..."
-```
+# 5. タグ作成
+git tag -a v1.x.x -m "Release version 1.x.x"
 
-### 5. レビューとマージ
-- CodeRabbit による自動レビューを確認
-- 必要に応じて修正
-- PR をマージ（Delete branch オプション付き）
+# 6. npm公開
+npm publish
 
-### 6. バージョン更新
-メインブランチで以下のファイルを更新：
-- `package.json` - version フィールド
-- `CHANGELOG.md` - 新バージョンのセクション追加
-
-### 7. Git タグの作成
-```bash
-git tag -a v1.x.x -m "Release version 1.x.x
-
-- Feature 1
-- Feature 2
-- Bug fix 1"
-
+# 7. GitHub更新（認証設定後）
+git push origin main
 git push origin v1.x.x
 ```
 
-### 8. npm への公開
+### 3. テスト実行コマンド
 ```bash
-npm publish
+# 基本テスト
+npm test
+
+# リント（設定されている場合）
+npm run lint
+
+# 型チェック（TypeScriptプロジェクトの場合）
+npm run typecheck
 ```
 
-### 9. GitHub リリースの作成
+## 🔍 重要な修正履歴
+
+### v1.16.1 (2025-06-17)
+- **問題**: chrome.tabs.query が tabs 権限を要求する誤検出
+- **原因**: PermissionDetector.js で誤った設定
+- **修正**: 18行目と20行目を `null` に変更（Manifest V3では基本使用で権限不要）
+
+### v1.16.0 (2025-06-17)
+- **Issue #55**: node_modules スキャン性能改善
+  - ExcludeManager に高速正規表現チェック追加
+- **Issue #54**: 権限検出の誤検出修正
+  - コメントと文字列を除外してから解析
+- **Issue #53**: 成功率向上（81%→95%目標）
+  - フレームワーク対応パターン追加
+  - パフォーマンス閾値の調整
+
+## ⚠️ 既知の問題と注意点
+
+### 1. Git認証
+- WSL環境ではGitHub認証が必要
+- Docker環境でも同様の設定が必要になる可能性
+
+### 2. npm認証
+- `npm whoami` で確認
+- ログインしていない場合は `npm login` が必要
+
+### 3. テスト時の警告
+- good-extension サンプルは意図的に警告を含む
+- 警告があっても100%成功は正常
+
+## 🎯 今後の課題
+
+### 優先度: 高
+1. TypeScript対応の検討
+2. VS Code拡張機能の開発
+3. より詳細なパフォーマンスメトリクス
+
+### 優先度: 中
+1. カスタムルールのプラグインシステム
+2. CI/CD統合の改善
+3. 国際化の拡張（韓国語、中国語対応）
+
+## 🤝 コミュニティとの関係
+
+### AIテスター
+- **Kirin**: 詳細なフィードバックを提供する優秀なテスター
+- **Claude Debugger**: バグ報告に協力的
+- **Kaizen (カイゼン)**: フレームワークの改善コンパニオン
+
+### 対応方針
+1. Issueには迅速に対応（24時間以内）
+2. フィードバックには感謝を示す
+3. 改善提案は積極的に採用
+
+## 💡 重要な判断基準
+
+### コード変更時
+1. **テスト成功率100%維持**: 1つでも失敗したらリリースしない
+2. **後方互換性**: 既存ユーザーに影響を与えない
+3. **パフォーマンス**: 実行時間が大幅に増加しない
+4. **シンプルさ**: 複雑な実装より単純な解決を選ぶ
+
+### Issue対応時
+1. **再現性**: まず問題を再現する
+2. **根本原因**: 表面的な修正でなく根本を解決
+3. **テスト追加**: 同じ問題が再発しないようテストを追加
+
+## 📝 Docker環境での開始手順
+
 ```bash
-gh release create v1.x.x \
-  --title "v1.x.x - Release Title" \
-  --notes "## Release Notes..."
-```
-
-## 📋 開発タスク管理
-
-### 優先順位の高い改善項目（引き継ぎ資料より）
-
-#### 即座に実装可能な改善
-1. ✅ プログレス表示（テスト実行中の進捗）- v1.1.0 で実装済み
-2. ✅ より詳細なエラーメッセージ - v1.2.0 で実装済み
-3. ✅ 基本的な自動修正機能 - v1.3.0 で実装済み
-
-#### 中期的な目標
-1. ウォッチモード（ファイル変更時の自動テスト）
-2. 並列実行オプション
-3. より高度なメトリクス
-
-#### 長期的な目標
-1. VS Code 拡張機能の開発
-2. コミュニティからのフィードバックに基づく機能追加
-
-## 🛠️ 開発環境
-
-### 必要なツール
-- Node.js 14.0.0 以上
-- npm
-- Git
-- GitHub CLI (`gh`)
-
-### セットアップ
-```bash
-# リポジトリのクローン
+# 1. リポジトリのクローン
 git clone https://github.com/ibushimaru/chrome-extension-test-framework.git
 cd chrome-extension-test-framework
 
-# 依存関係のインストール
-npm install
+# 2. 作業ディレクトリに移動
+cd chrome-extension-test-framework
 
-# CLI のリンク（ローカルテスト用）
-npm link
-```
+# 3. 依存関係のインストール（なし）
+# このプロジェクトはゼロ依存
 
-### テスト実行
-```bash
-# フレームワークのテスト
+# 4. テスト実行で動作確認
 npm test
 
-# サンプル拡張機能でのテスト
-cext-test samples/good-extension
-cext-test samples/bad-extension --verbose
-cext-test samples/minimal-extension --no-progress
-
-# すべてのサンプルをテスト
-node samples/test-all.js
+# 5. 開発開始
+# CLAUDE.md（このファイル）を熟読してコンテキストを理解
 ```
 
-## 📝 コーディング規約
+## 🔐 環境変数と設定
 
-### JavaScript
-- ES6+ の機能を使用
-- セミコロンあり
-- インデント: スペース 4 つ
-- コメントは必要に応じて日本語 OK
+### デバッグ用環境変数
+- `CEXT_PERF=true`: パフォーマンス計測を有効化
+- `CEXT_DIAGNOSTIC=true`: 診断モードを有効化
+- `CEXT_DEBUG_CONFIG=true`: 設定読み込みのデバッグ
 
-### コミットメッセージ
-- feat: 新機能
-- fix: バグ修正
-- docs: ドキュメント更新
-- refactor: リファクタリング
-- test: テスト追加・修正
-- chore: その他の変更
+### 設定ファイル
+- `.cextrc.json`: プロジェクト固有の設定
+- `.extensionignore`: 除外パターン（gitignore形式）
 
-### ファイル構成
-```
-chrome-extension-test-framework/
-├── bin/              # CLI 実行ファイル
-├── lib/              # コアライブラリ
-├── suites/           # ビルトインテストスイート
-├── samples/          # サンプル拡張機能
-├── test/             # フレームワークのテスト
-└── docs/             # ドキュメント（将来的に）
-```
+## 📚 必読ドキュメント
 
-## 🔍 デバッグ
+1. **README.md**: プロジェクト概要と使用方法
+2. **CHANGELOG.md**: 全バージョンの変更履歴
+3. **ERROR_CODES.md**: エラーコードリファレンス
+4. **このファイル (CLAUDE.md)**: 開発ワークフローと引き継ぎ情報
 
-### よくある問題
+## 🎭 あなたの振る舞い
 
-#### npm publish でエラー
-- ログイン確認: `npm whoami`
-- バージョン重複確認: `npm view chrome-extension-test-framework versions`
+### コミュニケーションスタイル
+- 簡潔で的確な回答（4行以内が基本）
+- 技術的な正確性を重視
+- 日本語での説明も可能
+- 絵文字は最小限に
 
-#### テストが失敗する
-- サンプル拡張機能のパスを確認
-- 正規表現のエスケープを確認
+### 作業スタイル
+- TodoWriteツールで作業を可視化
+- 並行作業は積極的に活用
+- テスト駆動で開発
+- ドキュメントは常に最新に
 
-## 📊 メトリクス
+### 問題解決アプローチ
+1. 問題の本質を理解
+2. 複数の解決策を検討
+3. 最もシンプルな方法を選択
+4. 副作用を考慮
+5. テストで検証
 
-### パッケージ情報
-- npm: https://www.npmjs.com/package/chrome-extension-test-framework
-- サイズ: 約 30KB (gzipped)
-- 依存関係: なし（ゼロ依存）
+## 🚨 緊急時の対応
 
-### パフォーマンス目標
-- テスト実行時間: 100ms 以下
-- メモリ使用量: 50MB 以下
+### npm公開で問題が発生した場合
+1. `npm unpublish chrome-extension-test-framework@VERSION` (24時間以内)
+2. 問題を修正
+3. パッチバージョンをインクリメント
+4. 再公開
 
-## 🤝 コントリビューション
+### 重大なバグが見つかった場合
+1. すぐにIssueを作成
+2. HotfixブランチでEを修正
+3. 緊急リリース（パッチバージョン）
+4. CHANGELOGに[CRITICAL]タグを付ける
 
-1. Issue の作成または既存 Issue の確認
-2. フィーチャーブランチの作成
-3. 変更の実装とテスト
-4. PR の作成
-5. レビューとマージ
+## 🌟 成功の鍵
 
-## 📚 参考リンク
-
-- [GitHub リポジトリ](https://github.com/ibushimaru/chrome-extension-test-framework)
-- [npm パッケージ](https://www.npmjs.com/package/chrome-extension-test-framework)
-- [Chrome Extensions Documentation](https://developer.chrome.com/docs/extensions/)
-- [Manifest V3](https://developer.chrome.com/docs/extensions/mv3/)
-
-## 🗓️ 更新履歴
-
-- 2025-06-15: v1.3.0 リリース（自動修正機能）
-- 2025-06-15: v1.2.0 リリース（詳細なエラーメッセージ）
-- 2025-06-15: v1.1.0 リリース（プログレス表示機能）
-- 2025-06-15: v1.0.1 npm 初回公開
-- 2025-06-15: CLAUDE.md 作成、ワークフロー文書化
+1. **品質優先**: 急いでリリースするより品質を重視
+2. **ユーザー第一**: AIテスターのフィードバックを大切に
+3. **継続的改善**: 小さな改善を積み重ねる
+4. **透明性**: 問題や制限を隠さない
 
 ---
 
-このドキュメントは開発の進行に応じて更新されます。
+このドキュメントは、次のClaudeインスタンスが完全に引き継げるよう、プロジェクトのすべての側面を記録しています。Docker環境で `git clone` 後、このファイルを最初に読むことで、現在の状態と今後の方針を完全に理解できます。
+
+最終更新: 2025-06-17 (v1.16.1リリース後)
+更新者: Claude (WSL環境)
+
+## 追記: 現在のTodoリスト状態
+すべてのタスクは完了しています。新しい環境では、新たなIssueが来るまで待機状態となります。
+
+## 🧠 暗黙知と重要な教訓
+
+### ユーザー（ibushimaru）の特徴
+1. **迅速な対応を重視**: 「じゃないとまた起こられちゃうよ」という表現から、品質とスピードの両立が重要
+2. **自動化を好む**: 「手動はできない。自動でやる必要がある」
+3. **簡潔な指示**: 「ではリリースしましょう」のような短い指示でも文脈から意図を読み取る必要がある
+
+### よく使うパターン
+```bash
+# テスト → 修正 → 再テストのサイクル
+npm test
+# 問題発見
+# 修正実装
+npm test
+# 成功確認 → リリース
+
+# 並行作業の活用
+git status & git diff & git log  # 同時実行で時間短縮
+```
+
+### 学んだ教訓
+1. **False Positive は即修正**: 誤検出は開発者の信頼を失う
+2. **成功率は数字で示す**: 91% → 100% のように具体的に
+3. **Issue番号を必ず参照**: トレーサビリティが重要
+4. **コミットメッセージは詳細に**: 後で見返したときに理解できるように
+
+### トラブルシューティング
+
+#### tabs権限の誤検出が再発した場合
+```javascript
+// PermissionDetector.js の18-20行目を確認
+'chrome.tabs.query': null,  // 正しい
+'chrome.tabs.query': 'tabs', // 間違い（v1.16.0の問題）
+```
+
+#### node_modules スキャンが遅い場合
+```javascript
+// ExcludeManager.js の85行目を確認
+if (/[\\/\\]node_modules[\\/\\]/.test(filePathStr)) {
+    return true; // 高速正規表現チェック
+}
+```
+
+#### テストが失敗する場合のデバッグ
+```bash
+# 診断モードで実行
+CEXT_DIAGNOSTIC=true npm test
+
+# パフォーマンス計測を有効化
+CEXT_PERF=true npm test
+
+# 設定のデバッグ
+CEXT_DEBUG_CONFIG=true cext-test
+```
+
+### リリース前チェックリスト
+- [ ] `npm test` で100%成功
+- [ ] package.json のバージョン更新
+- [ ] CHANGELOG.md の更新
+- [ ] README.md の更新（新機能の場合）
+- [ ] git tag の作成
+- [ ] リリースノートの作成
+
+### Docker環境特有の注意点
+1. **ファイルパーミッション**: Dockerではファイル権限が異なる可能性
+2. **改行コード**: WindowsとLinuxで異なる場合がある
+3. **パス区切り文字**: 常にpath.joinを使用してOS依存を避ける
+
+## 🎯 最初にすべきこと（Docker環境）
+
+```bash
+# 1. CLAUDE.mdを読む（このファイル）
+cat CLAUDE.md
+
+# 2. 現在の状態を確認
+git status
+git log --oneline -10
+npm test
+
+# 3. npm認証確認
+npm whoami
+
+# 4. 最新のIssueを確認
+# GitHubでIssueタブを確認
+
+# 5. 準備完了！
+```
+
+## 💭 最後のメッセージ
+
+このプロジェクトは、AIテスターたちと共に成長してきました。彼らのフィードバックを大切にし、常に改善を続けてください。
+
+「カイゼン」の精神で、小さな改善を積み重ねることが、大きな成果につながります。
+
+次のClaudeインスタンスへ：あなたもこのプロジェクトの一部です。品質を守り、ユーザーを支援し、コミュニティと共に成長してください。
+
+頑張って！🚀
