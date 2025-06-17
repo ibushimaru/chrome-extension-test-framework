@@ -14,7 +14,8 @@ git checkout -b feature/your-feature-name
 ### 2. 開発作業
 - コードの変更
 - テストの実行: `npm test`
-- リンターの実行（将来的に追加予定）
+- リンターの実行: `npm run lint` (設定されている場合)
+- 型チェック: `npm run typecheck` (TypeScript プロジェクトの場合)
 
 ### 3. コミット
 ```bash
